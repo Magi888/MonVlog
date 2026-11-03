@@ -8,19 +8,49 @@ for Android TV / Google TV and Apple TV.
 (`monvlog_premium_monthly` → entitlement `premium`)  
 **Repo:** [Magi888/MonVlog](https://github.com/Magi888/MonVlog)
 
-This tree is **M0 — Flutter TV bootstrap**: splash → home shelves with focusable
-mock posters. No YouTube or RevenueCat secrets are committed.
+This tree is **M2 — YouTube curated catalog**: splash → home shelves loaded from
+YouTube Data API v3 (or mock fallback) → video detail with metadata. TV focus
+rings from M0 are preserved. No YouTube or RevenueCat secrets are committed.
 
 ## Requirements
 
-- Flutter **stable** (scaffold built with 3.35.x / Dart 3.9)
+- Flutter **stable** (scaffold built with 3.35.x / Dart 3.9+)
 - Android Studio / SDK for Android TV emulator
 - macOS + Xcode for Apple TV (see [docs/tvos.md](docs/tvos.md))
+- Optional: a **YouTube Data API v3** key (Google Cloud Console)
 
 ## Getting started
 
 ```sh
 flutter pub get
+```
+
+### Run without an API key (mock catalog)
+
+```sh
+flutter run -d <device>
+```
+
+Home shelves use the in-app mock catalog. Posters open the **detail** screen.
+
+### Run with YouTube Data API (live shelves)
+
+1. Create a Google Cloud project → enable **YouTube Data API v3**.
+2. Create an API key. Restrict it by Android package (`com.monvlog.monvlog`) /
+   iOS bundle ID when you can.
+3. Pass the key at build time — **never** commit it:
+
+```sh
+flutter run -d <device> \
+  --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
+```
+
+Optional remote allowlist (same JSON shape as the in-repo file):
+
+```sh
+flutter run -d <device> \
+  --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE \
+  --dart-define=CURATED_CHANNELS_URL=https://example.com/curated_channels.json
 ```
 
 ### Android TV emulator
@@ -32,17 +62,12 @@ flutter pub get
 
 ```sh
 flutter devices
-flutter run -d <android-tv-emulator-id>
+flutter run -d <android-tv-emulator-id> \
+  --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
 ```
 
-D-pad / keyboard arrows move focus across shelf posters; Enter/Select activates.
-
-The Android app declares:
-
-- `LEANBACK_LAUNCHER` intent filter
-- `android.software.leanback` (`required="false"`)
-- `android.hardware.touchscreen` (`required="false"`)
-- TV banner at `android/app/src/main/res/drawable/tv_banner.png`
+D-pad / keyboard arrows move focus across shelf posters; Enter/Select opens
+detail. Back returns to home.
 
 ### Apple TV (tvOS)
 
@@ -50,12 +75,7 @@ Official Flutter does not include a `tvos` platform in `flutter create`. MonVlog
 uses the community **flutter-tvos** toolchain on macOS. Full steps:
 **[docs/tvos.md](docs/tvos.md)**.
 
-The `ios/` folder is the stock Flutter iOS runner kept as the Darwin baseline
-until `tvos/` is generated on a Mac.
-
 ### Desktop / Chrome (shell only)
-
-For quick UI iteration without a TV emulator:
 
 ```sh
 flutter run -d chrome
@@ -63,46 +83,60 @@ flutter run -d chrome
 flutter run -d linux
 ```
 
-Focus rings still respond to keyboard arrows.
+## Curated channel allowlist
+
+Seed list (≈25 entries): [`assets/config/curated_channels.json`](assets/config/curated_channels.json)
+
+- **`verified: true`** — public `UC…` IDs resolved from YouTube handles.
+- **`verified: false` / `STUB` in `channelId` or notes** — editorial placeholders;
+  replace before production. Stubs are skipped by the live API client.
+- Edit the JSON in-repo, or host the same shape and point
+  `CURATED_CHANNELS_URL` at it.
+
+Live shelves:
+
+1. `channels.list` → uploads playlist ID  
+2. `playlistItems.list` → recent uploads (fallback: `search.list` by `channelId`)  
+3. `videos.list` → duration, description, view count  
+
+If the key is missing or the request fails, shelves fall back to the mock catalog.
 
 ## Project layout
 
 ```
 lib/
   app/           # theme, router, MaterialApp
-  features/      # splash, home (+ shelf / poster widgets)
-  data/          # mock catalog + models (YouTube API later)
+  features/      # splash, home, detail
+  data/          # curated JSON loader, YouTube client, catalog repo, mock
   billing/       # RevenueCat stub — no API keys
   platform/      # Android YouTube intent helper
+assets/config/
+  curated_channels.json
 docs/
-  tvos.md        # Apple TV / flutter-tvos notes
+  tvos.md
 ```
-
-## Dependencies (M0)
-
-| Package | Role |
-|---|---|
-| `go_router` | splash → home |
-| `flutter_riverpod` | app DI / router provider |
-| `dio` | reserved for YouTube Data API |
-| `purchases_flutter` | RevenueCat (stubbed configure) |
-| `cached_network_image` | poster thumbnails |
-| `shared_preferences` | continue-watching (wired later) |
-| `android_intent_plus` | YouTube TV/app fallback |
 
 ## Secrets policy
 
 - **Do not** commit YouTube Data API keys or RevenueCat public SDK keys.
-- Placeholders live in `lib/billing/purchases_stub.dart`.
-- M4 will load keys via `--dart-define` / secure store config.
+- Pass YouTube key via `--dart-define=YOUTUBE_API_KEY=...` only.
+- `.env`, `secrets/`, and store config files are gitignored.
+- RevenueCat placeholders live in `lib/billing/purchases_stub.dart` (M4).
+
+## Tests / analyze
+
+```sh
+flutter analyze
+flutter test
+```
 
 ## Milestone map
 
 | # | Outcome |
 |---|---|
-| **M0** | This shell on Android TV emulator + tvOS path documented |
+| M0 | Flutter TV shell on Android TV + tvOS path documented |
 | M1 | Full IA / focus nav |
-| M2 | YouTube curated catalog |
+| **M2** | **YouTube curated catalog → shelves → detail (this)** |
 | M3 | In-app player (+ Android intent fallback) |
 | M4 | RevenueCat $3.99/mo gate |
 | M5–M6 | Store readiness & soft launch |

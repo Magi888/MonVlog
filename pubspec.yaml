@@ -18,7 +18,7 @@ dependencies:
   # State (Riverpod chosen for M0; see plan §3)
   flutter_riverpod: ^2.6.1
 
-  # Networking (YouTube Data API later; no keys in M0)
+  # Networking (YouTube Data API v3)
   dio: ^5.9.0
 
   # Billing — RevenueCat stubbed until M4 ($3.99/mo product)
@@ -40,3 +40,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/config/curated_channels.json

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../data/models/video_item.dart';
@@ -24,15 +25,7 @@ class _PosterCardState extends State<PosterCard> {
   bool _focused = false;
 
   void _onActivate() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${widget.item.title} · ${widget.item.channelName} '
-          '(player arrives in M3)',
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    context.push('/detail', extra: widget.item);
   }
 
   Future<void> _onLongSelect() async {
