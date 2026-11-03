@@ -1,5 +1,5 @@
 name: monvlog
-description: "MonVlog — Mongolian YouTube vlogs on TV"
+description: "MonVlog — Mongolian YouTube vlogs (phone UI mockup + TV shell)"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -32,6 +32,7 @@ dependencies:
 
   # Android TV YouTube fallback intents
   android_intent_plus: ^5.3.0
+  google_fonts: ^9.0.0
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +43,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/config/curated_channels.json
+    - assets/promo/europe-tour-hero.jpg
+    - assets/brand/monvlog-logo-mark.jpg

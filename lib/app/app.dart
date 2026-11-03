@@ -13,7 +13,10 @@ class MonVlogApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'MonVlog',
       debugShowCheckedModeBanner: false,
-      theme: MonVlogTheme.dark,
+      // Phone mockup is the primary visual demo; TV screens still use dark tokens.
+      theme: MonVlogTheme.phone,
+      darkTheme: MonVlogTheme.dark,
+      themeMode: ThemeMode.light,
       routerConfig: router,
     );
   }
