@@ -102,7 +102,13 @@ docs/
 - Full-bleed EUROPE TOUR promo (no inset hero card clutter)
 - Navy type (`#0D1B2A`), outlined **Invite**, solid red **Оператор**
 - Typography: Bebas Neue (display) + Manrope (UI) via `google_fonts`
-- Motion: hero fade, profile card slide-up, logo elastic scale
+- Motion: hero fade, profile card slide-up, logo scale-in
+
+### Screenshots
+
+![Community](docs/screenshots/community.png)
+
+![Watch](docs/screenshots/watch.png)
 
 ## Secrets policy
 
