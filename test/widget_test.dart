@@ -11,11 +11,13 @@ void main() {
     expect(find.text('MonVlog'), findsOneWidget);
     expect(find.textContaining('Mongolian vlogs'), findsOneWidget);
 
-    // Advance past splash gate (1.4s) and settle navigation to home.
+    // Advance past splash gate (1.4s) and settle navigation + catalog load.
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle();
 
     expect(find.text('Featured'), findsOneWidget);
     expect(find.text('New from creators'), findsOneWidget);
+    // Without YOUTUBE_API_KEY the home shelf uses the mock fallback.
+    expect(find.textContaining('Mock'), findsWidgets);
   });
 }
