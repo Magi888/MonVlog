@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
 import '../../billing/purchases_stub.dart';
+import '../phone/widgets/monvlog_logo_mark.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,6 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fade;
+  late final Animation<double> _scale;
 
   @override
   void initState() {
@@ -24,6 +27,9 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 900),
     );
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _scale = Tween<double>(begin: 0.86, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
     _controller.forward();
     _gate();
   }
@@ -31,11 +37,11 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _gate() async {
     await Future<void>.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
-    // M0: always home. M4: route to paywall when !PurchasesStub.hasPremium.
-    if (PurchasesStub.hasPremium) {
-      context.go('/home');
+    // Phone zagvar is primary demo. M4: gate on !PurchasesStub.hasPremium.
+    if (!PurchasesStub.hasPremium) {
+      context.go('/phone');
     } else {
-      context.go('/home');
+      context.go('/phone');
     }
   }
 
@@ -53,43 +59,53 @@ class _SplashScreenState extends State<SplashScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0E1420), MonVlogTheme.bg, Color(0xFF1A1020)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              MonVlogTheme.brandRed,
+              MonVlogTheme.brandRedDeep,
+              Color(0xFF8B1A1A),
+            ],
           ),
         ),
         child: FadeTransition(
           opacity: _fade,
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'MonVlog',
-                style: TextStyle(
-                  fontSize: 64,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                  color: MonVlogTheme.onBg,
+          child: ScaleTransition(
+            scale: _scale,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const MonVlogLogoMark(size: 96),
+                const SizedBox(height: 28),
+                Text(
+                  'MonVlog',
+                  style: GoogleFonts.bebasNeue(
+                    fontSize: 64,
+                    letterSpacing: 2,
+                    color: Colors.white,
+                    height: 1,
+                  ),
                 ),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'Mongolian vlogs for the living room',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: MonVlogTheme.muted,
+                const SizedBox(height: 8),
+                Text(
+                  'Монголчуудын нэгдэл',
+                  style: GoogleFonts.manrope(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
                 ),
-              ),
-              SizedBox(height: 48),
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: MonVlogTheme.accent,
+                const SizedBox(height: 48),
+                const SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -1,5 +1,5 @@
 name: monvlog
-description: "MonVlog — Mongolian YouTube vlogs on TV"
+description: "MonVlog — Mongolian YouTube vlogs (phone UI mockup + TV shell)"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -18,7 +18,7 @@ dependencies:
   # State (Riverpod chosen for M0; see plan §3)
   flutter_riverpod: ^2.6.1
 
-  # Networking (YouTube Data API later; no keys in M0)
+  # Networking (YouTube Data API v3)
   dio: ^5.9.0
 
   # Billing — RevenueCat stubbed until M4 ($3.99/mo product)
@@ -32,6 +32,7 @@ dependencies:
 
   # Android TV YouTube fallback intents
   android_intent_plus: ^5.3.0
+  google_fonts: ^9.0.0
 
 dev_dependencies:
   flutter_test:
@@ -40,3 +41,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/config/curated_channels.json
+    - assets/promo/europe-tour-hero.jpg
+    - assets/brand/monvlog-logo-mark.jpg

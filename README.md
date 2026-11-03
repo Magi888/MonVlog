@@ -1,108 +1,136 @@
 # MonVlog
 
-Lean TV-first subscription app that aggregates Mongolian creators’ YouTube vlogs
-for Android TV / Google TV and Apple TV.
+Phone-first Flutter UI **zagvar** (visual mockup) for MonVlog, plus the existing
+Android TV leanback shell and curated YouTube catalog (mock without API keys).
 
-**Product:** MonVlog  
-**Price (later):** **$3.99/month** via store IAP through **RevenueCat**  
-(`monvlog_premium_monthly` → entitlement `premium`)  
+**Product:** MonVlog / Monvlog.com  
+**Tagline:** Монголчуудын нэгдэл  
+**Brand red:** `#D32F2F`  
+**Price (later):** **$3.99/month** via RevenueCat (stubbed)  
 **Repo:** [Magi888/MonVlog](https://github.com/Magi888/MonVlog)
 
-This tree is **M0 — Flutter TV bootstrap**: splash → home shelves with focusable
-mock posters. No YouTube or RevenueCat secrets are committed.
+## What this tree demos
+
+| Surface | Route | Notes |
+|---|---|---|
+| **Phone community** (primary) | `/phone` | Full-bleed EUROPE TOUR hero, overlapping white profile card, red logo, Invite / Оператор |
+| **Phone watch shelves** | Watch tab | Reuses mock/live catalog — no API key required |
+| **TV leanback home** | `/home` or `/tv` | M0/M2 dark shelves + focus rings intact |
+| Splash | `/splash` | Brand gate → phone shell |
+
+YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo.
 
 ## Requirements
 
-- Flutter **stable** (scaffold built with 3.35.x / Dart 3.9)
-- Android Studio / SDK for Android TV emulator
-- macOS + Xcode for Apple TV (see [docs/tvos.md](docs/tvos.md))
+- Flutter **stable** (3.35+ / Dart 3.9+)
+- Chrome (fastest phone mockup) or Android emulator / iOS simulator
+- Optional: Android TV emulator for leanback (`/tv`)
+- Optional: YouTube Data API key for live shelves (not required)
 
-## Getting started
+## Getting started (mockup — no API keys)
 
 ```sh
 flutter pub get
 ```
 
-### Android TV emulator
+### Phone UI on Chrome (recommended demo)
 
-1. In Android Studio → Device Manager → Create Device → **TV** category  
-   (e.g. Television 1080p, API 34).
-2. Start the emulator.
-3. From the repo root:
+```sh
+flutter run -d chrome --web-browser-flag "--window-size=390,844"
+```
+
+Or open DevTools device toolbar after launch and pick a phone size.
+
+Flow: splash → **Community** (reference look) → **Watch** tab for video shelves.
+
+### Phone UI on Android emulator
 
 ```sh
 flutter devices
-flutter run -d <android-tv-emulator-id>
+flutter run -d <android-phone-emulator-id>
 ```
 
-D-pad / keyboard arrows move focus across shelf posters; Enter/Select activates.
-
-The Android app declares:
-
-- `LEANBACK_LAUNCHER` intent filter
-- `android.software.leanback` (`required="false"`)
-- `android.hardware.touchscreen` (`required="false"`)
-- TV banner at `android/app/src/main/res/drawable/tv_banner.png`
-
-### Apple TV (tvOS)
-
-Official Flutter does not include a `tvos` platform in `flutter create`. MonVlog
-uses the community **flutter-tvos** toolchain on macOS. Full steps:
-**[docs/tvos.md](docs/tvos.md)**.
-
-The `ios/` folder is the stock Flutter iOS runner kept as the Darwin baseline
-until `tvos/` is generated on a Mac.
-
-### Desktop / Chrome (shell only)
-
-For quick UI iteration without a TV emulator:
+### TV leanback (unchanged)
 
 ```sh
-flutter run -d chrome
-# or
-flutter run -d linux
+flutter run -d <android-tv-emulator-id>
+# then open /tv, or temporarily change splash to context.go('/tv')
 ```
 
-Focus rings still respond to keyboard arrows.
+From a running phone build you can deep-link:
+
+```sh
+flutter run -d chrome --web-browser-flag "--window-size=1280,720"
+# navigate to http://localhost:<port>/tv  (path URL strategy may vary)
+```
+
+Or in Dart: `context.go('/tv')`.
+
+### Live YouTube shelves (optional)
+
+```sh
+flutter run -d chrome \
+  --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
+```
+
+Without a key, Watch uses the in-app **mock catalog**.
 
 ## Project layout
 
 ```
 lib/
-  app/           # theme, router, MaterialApp
-  features/      # splash, home (+ shelf / poster widgets)
-  data/          # mock catalog + models (YouTube API later)
-  billing/       # RevenueCat stub — no API keys
-  platform/      # Android YouTube intent helper
+  app/                 # theme (phone light + TV dark), router, MaterialApp
+  features/
+    phone/             # Community zagvar + Watch shelves + shell
+    home/              # TV leanback shelves (preserved)
+    splash/            # brand splash → /phone
+    detail/            # video detail (shared)
+  data/                # curated JSON, YouTube client, mock catalog
+  billing/             # RevenueCat stub — no API keys
+  platform/            # Android YouTube intent helper
+assets/
+  promo/europe-tour-hero.jpg
+  brand/monvlog-logo-mark.jpg
+  config/curated_channels.json
 docs/
-  tvos.md        # Apple TV / flutter-tvos notes
+  tvos.md
 ```
 
-## Dependencies (M0)
+## Design notes (phone)
 
-| Package | Role |
-|---|---|
-| `go_router` | splash → home |
-| `flutter_riverpod` | app DI / router provider |
-| `dio` | reserved for YouTube Data API |
-| `purchases_flutter` | RevenueCat (stubbed configure) |
-| `cached_network_image` | poster thumbnails |
-| `shared_preferences` | continue-watching (wired later) |
-| `android_intent_plus` | YouTube TV/app fallback |
+- Brand-first: red hero + overlapping **MonVlog** mark before body copy
+- Full-bleed EUROPE TOUR promo (no inset hero card clutter)
+- Navy type (`#0D1B2A`), outlined **Invite**, solid red **Оператор**
+- Typography: Bebas Neue (display) + Manrope (UI) via `google_fonts`
+- Motion: hero fade, profile card slide-up, logo scale-in
+
+### Screenshots
+
+![Community](docs/screenshots/community.png)
+
+![Watch](docs/screenshots/watch.png)
 
 ## Secrets policy
 
-- **Do not** commit YouTube Data API keys or RevenueCat public SDK keys.
-- Placeholders live in `lib/billing/purchases_stub.dart`.
-- M4 will load keys via `--dart-define` / secure store config.
+- **Do not** commit YouTube or RevenueCat keys.
+- Mock demo needs **zero** secrets.
+- Pass YouTube key only via `--dart-define=YOUTUBE_API_KEY=...` when testing live.
+
+## Tests / analyze
+
+```sh
+flutter analyze
+flutter test
+```
 
 ## Milestone map
 
 | # | Outcome |
 |---|---|
-| **M0** | This shell on Android TV emulator + tvOS path documented |
-| M1 | Full IA / focus nav |
-| M2 | YouTube curated catalog |
-| M3 | In-app player (+ Android intent fallback) |
+| M0 | Flutter TV shell |
+| M1 | Full TV IA / focus nav |
+| M2 | YouTube curated catalog → shelves → detail |
+| **UI mock** | **Phone community zagvar + Watch tab (this)** |
+| M3 | In-app player |
 | M4 | RevenueCat $3.99/mo gate |
 | M5–M6 | Store readiness & soft launch |
