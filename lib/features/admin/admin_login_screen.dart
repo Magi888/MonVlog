@@ -12,7 +12,7 @@ import '../phone/widgets/monvlog_logo_mark.dart';
 /// Branded MonVlog entry / admin login.
 ///
 /// Admin (`maag888@gmail.com` + `ADMIN_PASSWORD` dart-define) → catalog.
-/// Everyone else can **Continue as guest** into home/community (read-only).
+/// Everyone else can **Continue as guest** into the phone shell (read-only).
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
 
@@ -57,7 +57,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
   }
 
   String _guestDestination(BuildContext context) {
-    return FormFactor.isTvLayout(context) ? '/home' : '/phone';
+    // Phone always enters the Community/Watch/Profile shell — never /home.
+    return FormFactor.isTvLayout(context) ? '/tv' : '/phone';
   }
 
   void _continueAsGuest() {

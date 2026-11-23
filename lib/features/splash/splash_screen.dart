@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
       // Keep billing stub wired until RevenueCat gate lands.
       return PurchasesStub.hasPremium || !PurchasesStub.hasPremium;
     }());
-    // Entry gate: branded login. Admin → catalog; guest → home/community.
+    // Entry gate: branded login. Admin → catalog; guest → /phone shell.
     context.go('/admin/login');
   }
 

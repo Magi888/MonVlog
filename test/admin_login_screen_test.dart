@@ -30,8 +30,12 @@ void main() {
           builder: (_, __) => const Scaffold(body: Text('phone-home')),
         ),
         GoRoute(
-          path: '/home',
+          path: '/tv',
           builder: (_, __) => const Scaffold(body: Text('tv-home')),
+        ),
+        GoRoute(
+          path: '/home',
+          builder: (_, __) => const Scaffold(body: Text('legacy-home')),
         ),
         GoRoute(
           path: '/admin/catalog',
@@ -85,7 +89,7 @@ void main() {
     expect(find.text('phone-home'), findsOneWidget);
   });
 
-  testWidgets('guest continue on TV viewport goes to /home', (tester) async {
+  testWidgets('guest continue on TV viewport goes to /tv', (tester) async {
     tester.view.physicalSize = const Size(1280, 720);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -100,5 +104,6 @@ void main() {
     await tester.tap(find.text('Continue as guest'));
     await tester.pumpAndSettle();
     expect(find.text('tv-home'), findsOneWidget);
+    expect(find.text('legacy-home'), findsNothing);
   });
 }

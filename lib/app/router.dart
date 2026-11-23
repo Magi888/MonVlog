@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'form_factor.dart';
 import '../auth/admin_auth_providers.dart';
 import '../data/models/video_item.dart';
 import '../features/admin/admin_catalog_screen.dart';
@@ -31,6 +32,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Already signed in as admin → skip the entry form.
       if (loggingIn && isAdmin) {
         return '/admin/catalog';
+      }
+
+      // Phone must never land on the legacy /home TV alias (no bottom menu).
+      // /home stays a TV-only synonym of /tv; phone viewports → /phone shell.
+      if (path == '/home' && !FormFactor.isTvLayout(context)) {
+        return '/phone';
       }
       return null;
     },
@@ -63,7 +70,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           child: PhoneShell(initialIndex: 2),
         ),
       ),
-      // Netflix-style TV leanback (Android TV / Google TV / Samsung living room).
+      // Legacy alias — phone viewports redirect to /phone (see redirect above).
+      // TV / leanback still renders [TvShell] here; prefer /tv for new links.
       GoRoute(
         path: '/home',
         name: 'home',
