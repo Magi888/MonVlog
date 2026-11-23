@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
+import '../../auth/admin_auth_providers.dart';
 import '../../data/catalog_providers.dart';
 import '../../data/catalog_repository.dart';
 import '../home/widgets/shelf_row.dart';
@@ -246,12 +248,78 @@ class _TvSectionBody extends ConsumerWidget {
           subtitle: 'Continue watching + favorites (local) — stubbed.',
         );
       default:
-        return const _TvPlaceholder(
-          title: 'Settings',
-          subtitle:
-              '\$3.99/mo via RevenueCat (stub). Samsung: Android TV / Google TV leanback. Stock Flutter does not ship Tizen — a Tizen plugin would be needed later for native Tizen builds.',
-        );
+        return const _TvSettingsSection();
     }
+  }
+}
+
+class _TvSettingsSection extends ConsumerWidget {
+  const _TvSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isAdmin = ref.watch(isAdminProvider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(36, 40, 36, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Settings',
+            style: GoogleFonts.bebasNeue(
+              color: MonVlogTheme.onBg,
+              fontSize: 42,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '\$3.99/mo via RevenueCat (stub). Samsung: Android TV / Google TV leanback. Stock Flutter does not ship Tizen — a Tizen plugin would be needed later for native Tizen builds.',
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.muted,
+              fontSize: 15,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 28),
+          if (isAdmin)
+            FilledButton.icon(
+              onPressed: () => context.go('/admin/catalog'),
+              icon: const Icon(Icons.admin_panel_settings_outlined),
+              label: Text(
+                'Open catalog admin',
+                style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: MonVlogTheme.brandRed,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
+            )
+          else
+            TextButton.icon(
+              onPressed: () => context.go('/admin/login'),
+              icon: const Icon(Icons.lock_outline_rounded),
+              label: Text(
+                'Admin sign-in',
+                style: GoogleFonts.manrope(fontWeight: FontWeight.w600),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Text(
+            isAdmin
+                ? 'Signed in as admin — you can curate channels.'
+                : 'Viewers browse shelves only. Admin can search & add channels.',
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.muted,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

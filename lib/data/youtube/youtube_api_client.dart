@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../models/video_item.dart';
 import 'youtube_config.dart';
+import 'youtube_search_models.dart';
 
 /// Thin YouTube Data API v3 client (channels → uploads playlist → videos).
 class YoutubeApiClient {
@@ -24,6 +25,172 @@ class YoutubeApiClient {
   final String baseUrl;
 
   bool get isConfigured => apiKey.trim().isNotEmpty;
+
+  /// `search.list` for channels (and optionally playlists) by name.
+  /// When [apiKey] is missing, returns mock hits with [YoutubeSearchHit.isMock].
+  Future<YoutubeChannelSearchResult> searchChannelsByName(
+    String query, {
+    int maxResults = 12,
+    bool includePlaylists = true,
+  }) async {
+    final q = query.trim();
+    if (q.isEmpty) {
+      return const YoutubeChannelSearchResult(
+        hits: [],
+        isMock: false,
+        message: '',
+      );
+    }
+
+    if (!isConfigured) {
+      return YoutubeChannelSearchResult(
+        hits: _mockSearchHits(q),
+        isMock: true,
+        message:
+            'YOUTUBE_API_KEY missing — showing mock search. Pass --dart-define=YOUTUBE_API_KEY=... for live results.',
+      );
+    }
+
+    try {
+      final channelHits = await _searchList(
+        query: q,
+        type: 'channel',
+        maxResults: maxResults,
+      );
+      var hits = channelHits;
+      if (includePlaylists) {
+        final playlistHits = await _searchList(
+          query: q,
+          type: 'playlist',
+          maxResults: (maxResults / 2).ceil().clamp(1, 25),
+        );
+        hits = [...channelHits, ...playlistHits];
+      }
+      return YoutubeChannelSearchResult(
+        hits: hits,
+        isMock: false,
+        message: hits.isEmpty ? 'No channels found for “$q”.' : '',
+      );
+    } catch (e) {
+      return YoutubeChannelSearchResult(
+        hits: _mockSearchHits(q),
+        isMock: true,
+        message: 'YouTube search failed ($e) — showing mock results.',
+      );
+    }
+  }
+
+  Future<List<YoutubeSearchHit>> _searchList({
+    required String query,
+    required String type,
+    required int maxResults,
+  }) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/search',
+      queryParameters: {
+        'part': 'snippet',
+        'q': query,
+        'type': type,
+        'maxResults': maxResults.clamp(1, 50),
+        'key': apiKey,
+      },
+    );
+
+    final items = response.data?['items'] as List<dynamic>? ?? const [];
+    final hits = <YoutubeSearchHit>[];
+    for (final raw in items) {
+      if (raw is! Map) continue;
+      final map = Map<String, dynamic>.from(raw);
+      final idMap = map['id'];
+      final snippet = map['snippet'];
+      if (idMap is! Map || snippet is! Map) continue;
+      final sn = Map<String, dynamic>.from(snippet);
+      final id = Map<String, dynamic>.from(idMap);
+      final kind = type == 'playlist' ? 'playlist' : 'channel';
+      final entityId = kind == 'playlist'
+          ? (id['playlistId'] as String? ?? '')
+          : (id['channelId'] as String? ?? sn['channelId'] as String? ?? '');
+      if (entityId.isEmpty) continue;
+      hits.add(
+        YoutubeSearchHit(
+          kind: kind,
+          id: entityId,
+          title: sn['title'] as String? ?? '',
+          description: sn['description'] as String? ?? '',
+          thumbnailUrl: _bestThumbnail(sn['thumbnails']),
+          channelId: sn['channelId'] as String? ??
+              (kind == 'channel' ? entityId : ''),
+          channelTitle: sn['channelTitle'] as String? ?? '',
+        ),
+      );
+    }
+    return hits;
+  }
+
+  static List<YoutubeSearchHit> _mockSearchHits(String query) {
+    final q = query.toLowerCase();
+    const pool = <YoutubeSearchHit>[
+      YoutubeSearchHit(
+        kind: 'channel',
+        id: 'UCQXxhQHalYjwMictp1lUbtg',
+        title: 'Gremix',
+        description: 'Mongolian daily vlogs (mock)',
+        channelId: 'UCQXxhQHalYjwMictp1lUbtg',
+        channelTitle: 'Gremix',
+        thumbnailUrl: 'https://picsum.photos/seed/gremix/240/240',
+        isMock: true,
+      ),
+      YoutubeSearchHit(
+        kind: 'channel',
+        id: 'UCIsvomXQNyFRjpAP_GyWI-Q',
+        title: 'Tselmeg Vlog',
+        description: 'Travel vlogs across Mongolia and Europe (mock)',
+        channelId: 'UCIsvomXQNyFRjpAP_GyWI-Q',
+        channelTitle: 'Tselmeg Vlog',
+        thumbnailUrl: 'https://picsum.photos/seed/tselmeg/240/240',
+        isMock: true,
+      ),
+      YoutubeSearchHit(
+        kind: 'channel',
+        id: 'UCXr6n3L8EDVQR-_EUJc-2Nw',
+        title: 'Positive Mongolians',
+        description: 'Community and daily life (mock)',
+        channelId: 'UCXr6n3L8EDVQR-_EUJc-2Nw',
+        channelTitle: 'Positive Mongolians',
+        thumbnailUrl: 'https://picsum.photos/seed/posmongol/240/240',
+        isMock: true,
+      ),
+      YoutubeSearchHit(
+        kind: 'playlist',
+        id: 'PLmonvlog_europe_tour_mock',
+        title: 'Europe Tour Highlights',
+        description: 'Curated travel playlist (mock)',
+        channelId: 'UCIsvomXQNyFRjpAP_GyWI-Q',
+        channelTitle: 'Tselmeg Vlog',
+        thumbnailUrl: 'https://picsum.photos/seed/europetour/240/240',
+        isMock: true,
+      ),
+      YoutubeSearchHit(
+        kind: 'channel',
+        id: 'UCdgDF-2qexbSiY43y9VucPQ',
+        title: 'Damisuna',
+        description: 'Food and travel adventures (mock)',
+        channelId: 'UCdgDF-2qexbSiY43y9VucPQ',
+        channelTitle: 'Damisuna',
+        thumbnailUrl: 'https://picsum.photos/seed/damisuna/240/240',
+        isMock: true,
+      ),
+    ];
+    final filtered = pool
+        .where(
+          (h) =>
+              h.title.toLowerCase().contains(q) ||
+              h.description.toLowerCase().contains(q) ||
+              h.channelTitle.toLowerCase().contains(q),
+        )
+        .toList();
+    return filtered.isNotEmpty ? filtered : pool.take(3).toList();
+  }
 
   /// `channels.list` — branding + uploads playlist ID.
   Future<List<YoutubeChannelMeta>> listChannels(List<String> channelIds) async {

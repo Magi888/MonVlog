@@ -17,9 +17,12 @@ UI on Android TV / Google TV (Samsung living-room path).
 | **Phone community** | `/phone` | EUROPE TOUR hero, Invite / Оператор, tabs incl. **МОНГОЛ ВЛОГ & КОНТЕНТ**, All Video Channels cards |
 | **Phone Watch** | Watch tab / `/phone/watch` | Netflix-style dark horizontal rails (mock catalog) |
 | **TV / Samsung living room** | `/tv` or `/home` | Left rail + focusable shelves; **no** phone bottom bar |
+| **Admin login** | `/admin/login` | Seeded admin email + password (see below) |
+| **Admin catalog** | `/admin/catalog` | Search YouTube channels/playlists → add to curated catalog (admin only) |
 | Splash | `/splash` | Routes phone vs TV by viewport |
 
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
+Without `YOUTUBE_API_KEY`, admin channel search shows **mock results** with a clear UI banner.
 
 ## Samsung / Android TV / Tizen
 
@@ -68,18 +71,47 @@ flutter run -d chrome \
   --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
 ```
 
+### Admin catalog (curate channels)
+
+Seeded admin identity: **`maag888@gmail.com`**.
+
+**Never commit the password.** Pass it only at run/build time:
+
+```sh
+flutter run -d chrome \
+  --dart-define=ADMIN_PASSWORD=YOUR_SECRET_HERE \
+  --web-browser-flag "--window-size=390,844"
+```
+
+On first launch the password is **hashed into flutter_secure_storage**. Later runs can authenticate from that stored hash without re-supplying the define (until storage is cleared). You may still pass `ADMIN_PASSWORD` every run if you prefer.
+
+Optional live search (otherwise mock search with an on-screen note):
+
+```sh
+flutter run -d chrome \
+  --dart-define=ADMIN_PASSWORD=YOUR_SECRET_HERE \
+  --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
+```
+
+- Open **Admin** from the phone top-right icon, TV **Settings → Admin sign-in**, or `/admin/login`.
+- Only the admin session can open `/admin/catalog` (role gate). Everyone else browses shelves read-only.
+- Added channels/playlists merge into local JSON overrides (`SharedPreferences`) on top of `assets/config/curated_channels.json` (same shape as optional remote `CURATED_CHANNELS_URL`).
+- Videos are auto-categorized into Travel / Food / Daily / Featured shelves via title/description heuristics.
+
 ## Project layout
 
 ```
 lib/
   app/                 # theme, router, form-factor
+  auth/                # admin login, seed email, secure password bootstrap
   features/
+    admin/             # login + catalog search/add UI
     phone/             # Community (Wix-like) + Watch rails + shell
     tv/                # Netflix left-rail shell + billboard
     home/              # shared focusable shelf / poster widgets
     splash/            # brand splash → /phone or /tv
     detail/            # video detail (shared)
-  data/                # curated JSON, YouTube client, mock catalog + channels
+  data/                # curated JSON, catalog store, categorizer, YouTube client
   billing/             # RevenueCat stub — no API keys
   platform/            # Android YouTube intent helper
 assets/
@@ -115,9 +147,10 @@ docs/
 
 ## Secrets policy
 
-- **Do not** commit YouTube or RevenueCat keys.
+- **Do not** commit YouTube, RevenueCat, or **admin passwords**.
 - Mock demo needs **zero** secrets.
 - Pass YouTube key only via `--dart-define=YOUTUBE_API_KEY=...` when testing live.
+- Pass admin password only via `--dart-define=ADMIN_PASSWORD=...` (or rely on the one-time secure-storage bootstrap from that define).
 
 ## Tests / analyze
 
@@ -133,7 +166,8 @@ flutter test
 | M0 | Flutter TV shell |
 | M1 | Full TV IA / focus nav |
 | M2 | YouTube curated catalog → shelves → detail |
-| **UI** | **Phone community + Netflix phone Watch + TV left rail (this)** |
+| **UI** | Phone community + Netflix phone Watch + TV left rail |
+| **Admin** | Admin login + YouTube channel/playlist catalog curation |
 | M3 | In-app player |
 | M4 | RevenueCat $3.99/mo gate |
 | M5–M6 | Store readiness & soft launch |

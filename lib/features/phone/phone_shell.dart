@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
+import '../../auth/admin_auth_providers.dart';
 import 'community_screen.dart';
 import 'phone_watch_screen.dart';
 
 /// Phone shell: Community (Wix-like) + Netflix Watch rails.
 /// Bottom nav is phone-only — TV uses [TvShell] left rail instead.
-class PhoneShell extends StatefulWidget {
+/// Viewers browse only; admin reaches catalog via the overflow menu.
+class PhoneShell extends ConsumerStatefulWidget {
   const PhoneShell({super.key, this.initialIndex = 0});
 
   final int initialIndex;
 
   @override
-  State<PhoneShell> createState() => _PhoneShellState();
+  ConsumerState<PhoneShell> createState() => _PhoneShellState();
 }
 
-class _PhoneShellState extends State<PhoneShell> {
+class _PhoneShellState extends ConsumerState<PhoneShell> {
   late int _index;
 
   static const _pages = [
@@ -30,13 +34,41 @@ class _PhoneShellState extends State<PhoneShell> {
     _index = widget.initialIndex.clamp(0, _pages.length - 1);
   }
 
+  void _openAdmin() {
+    final isAdmin = ref.read(isAdminProvider);
+    context.go(isAdmin ? '/admin/catalog' : '/admin/login');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isAdmin = ref.watch(isAdminProvider);
+
     return Scaffold(
       backgroundColor: MonVlogTheme.communityBg,
-      body: IndexedStack(
-        index: _index,
-        children: _pages,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _index,
+            children: _pages,
+          ),
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 4,
+            right: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: IconButton(
+                tooltip: isAdmin ? 'Catalog admin' : 'Admin sign-in',
+                onPressed: _openAdmin,
+                icon: Icon(
+                  isAdmin
+                      ? Icons.admin_panel_settings_rounded
+                      : Icons.manage_accounts_outlined,
+                  color: MonVlogTheme.muted,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
