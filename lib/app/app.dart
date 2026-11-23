@@ -13,8 +13,9 @@ class MonVlogApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'MonVlog',
       debugShowCheckedModeBanner: false,
-      // Dark community + Netflix TV share dark Mode; phone ThemeData carries
-      // coral accents for the Wix-like community shell.
+      // Dark community + Netflix TV share dark Mode. Both themes carry a
+      // high-contrast NavigationBarTheme so the phone bottom menu stays
+      // readable (Community / Watch / Profile) after splash → guest path.
       theme: MonVlogTheme.phone,
       darkTheme: MonVlogTheme.dark,
       themeMode: ThemeMode.dark,

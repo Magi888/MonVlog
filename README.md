@@ -17,6 +17,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 |---|---|---|
 | **Phone community** | `/phone` | EUROPE TOUR hero, Invite / Оператор, tabs incl. **МОНГОЛ ВЛОГ & КОНТЕНТ**, All Video Channels cards |
 | **Phone Watch** | Watch tab / `/phone/watch` | Netflix-style dark horizontal rails (mock catalog) |
+| **Phone Profile** | Profile tab / `/phone/profile` | Guest account + admin sign-in entry (bottom menu always visible) |
 | **TV / Samsung living room** | `/tv` or `/home` | Left rail + focusable shelves; **no** phone bottom bar |
 | **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login or **Continue as guest** |
 | **Admin catalog** | `/admin/catalog` | Search YouTube channels/playlists → add to curated catalog (admin only) |

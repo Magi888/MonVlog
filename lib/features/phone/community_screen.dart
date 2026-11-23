@@ -84,9 +84,10 @@ class _CommunityScreenState extends State<CommunityScreen>
     final top = MediaQuery.paddingOf(context).top;
     final heroHeight = MediaQuery.sizeOf(context).height * 0.34;
 
-    return Scaffold(
-      backgroundColor: MonVlogTheme.communityBg,
-      body: CustomScrollView(
+    // Body-only — [PhoneShell] owns the Scaffold + bottom menu.
+    return ColoredBox(
+      color: MonVlogTheme.communityBg,
+      child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
