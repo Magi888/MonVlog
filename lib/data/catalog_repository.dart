@@ -2,6 +2,7 @@ import 'mock_catalog.dart';
 import 'models/curated_channel.dart';
 import 'models/shelf.dart';
 import 'models/video_item.dart';
+import 'shelf_categorizer.dart';
 import 'youtube/youtube_api_client.dart';
 
 enum CatalogSource { live, mock }
@@ -28,11 +29,14 @@ class CatalogRepository {
     required YoutubeApiClient api,
     required CuratedCatalogConfig curated,
     this.perChannelUploads = 4,
+    ShelfCategorizer categorizer = const ShelfCategorizer(),
   })  : _api = api,
-        _curated = curated;
+        _curated = curated,
+        _categorizer = categorizer;
 
   final YoutubeApiClient _api;
   final CuratedCatalogConfig _curated;
+  final ShelfCategorizer _categorizer;
   final int perChannelUploads;
 
   CuratedCatalogConfig get curated => _curated;
@@ -125,38 +129,73 @@ class CatalogRepository {
         return bp.compareTo(ap);
       });
 
-    List<VideoItem> fromCategory(String category) {
-      final ids = ready
-          .where((c) => c.category == category)
-          .map((c) => c.channelId)
-          .toSet();
-      return all.where((v) => ids.contains(v.channelId)).take(12).toList();
+    final channelCategory = {
+      for (final c in ready) c.channelId: c.category,
+    };
+
+    List<VideoItem> forShelf(String shelfId) {
+      final matched = <VideoItem>[];
+      for (final v in all) {
+        final channelCat = channelCategory[v.channelId] ?? ShelfTypes.daily;
+        // Prefer video-title heuristics; fall back to curated channel category.
+        final videoCat = _categorizer.categorizeVideo(
+          v,
+          fallback: channelCat,
+        );
+        final effective =
+            videoCat != ShelfTypes.daily || channelCat == ShelfTypes.daily
+                ? videoCat
+                : channelCat;
+        if (shelfId == ShelfTypes.featured) {
+          if (channelCat == ShelfTypes.featured ||
+              videoCat == ShelfTypes.featured) {
+            matched.add(v);
+          }
+        } else if (effective == shelfId || channelCat == shelfId) {
+          matched.add(v);
+        }
+      }
+      return matched.take(12).toList();
     }
 
-    final featuredIds = ready
-        .where((c) => c.category == 'featured')
-        .map((c) => c.channelId)
-        .toSet();
-    var featured = all.where((v) => featuredIds.contains(v.channelId)).take(8).toList();
+    var featured = forShelf(ShelfTypes.featured).take(8).toList();
     if (featured.isEmpty) {
       featured = all.take(8).toList();
     }
 
-    final travel = fromCategory('travel');
-    final food = fromCategory('food');
-    final daily = fromCategory('daily');
+    final travel = forShelf(ShelfTypes.travel);
+    final food = forShelf(ShelfTypes.food);
+    final daily = forShelf(ShelfTypes.daily);
 
     final shelves = <Shelf>[
-      Shelf(id: 'featured', title: 'Featured', items: featured),
+      Shelf(
+        id: ShelfTypes.featured,
+        title: ShelfTypes.displayTitle(ShelfTypes.featured),
+        items: featured,
+      ),
       Shelf(
         id: 'new',
         title: 'New from creators',
         items: all.take(12).toList(),
       ),
-      if (travel.isNotEmpty) Shelf(id: 'travel', title: 'Travel', items: travel),
-      if (food.isNotEmpty) Shelf(id: 'food', title: 'Food', items: food),
+      if (travel.isNotEmpty)
+        Shelf(
+          id: ShelfTypes.travel,
+          title: ShelfTypes.displayTitle(ShelfTypes.travel),
+          items: travel,
+        ),
+      if (food.isNotEmpty)
+        Shelf(
+          id: ShelfTypes.food,
+          title: ShelfTypes.displayTitle(ShelfTypes.food),
+          items: food,
+        ),
       if (daily.isNotEmpty)
-        Shelf(id: 'daily', title: 'Daily life', items: daily),
+        Shelf(
+          id: ShelfTypes.daily,
+          title: ShelfTypes.displayTitle(ShelfTypes.daily),
+          items: daily,
+        ),
       // Continue watching stays local/mock until watch history lands.
       Shelf(
         id: 'continue',
@@ -164,7 +203,11 @@ class CatalogRepository {
         items: MockCatalog.shelves
             .firstWhere(
               (s) => s.id == 'continue',
-              orElse: () => const Shelf(id: 'continue', title: 'Continue watching', items: []),
+              orElse: () => const Shelf(
+                id: 'continue',
+                title: 'Continue watching',
+                items: [],
+              ),
             )
             .items,
       ),
