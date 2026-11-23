@@ -1,14 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Android TV / Google TV: touchscreen not required; leanback available. -->
+    <!--
+      Dual surface: Samsung phone (LAUNCHER) + Android TV / Google TV leanback.
+      leanback required=false so the same APK/AAB installs on phones AND TVs
+      (Samsung Tizen-with-Google-Play / Google TV models). Pure Tizen is not
+      a Flutter stock target — see docs/samsung-install.md.
+    -->
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
     <uses-feature
         android:name="android.software.leanback"
         android:required="false" />
-
 
     <application
         android:label="MonVlog"
@@ -28,12 +32,12 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-            <!-- Phone / tablet launcher -->
+            <!-- Samsung phone / tablet home screen -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Android TV / Google TV leanback launcher -->
+            <!-- Samsung Android TV / Google TV apps row (leanback) -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>

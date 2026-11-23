@@ -24,16 +24,30 @@ UI on Android TV / Google TV (Samsung living-room path).
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
 Without `YOUTUBE_API_KEY`, admin channel search shows **mock results** with a clear UI banner.
 
-## Samsung / Android TV / Tizen
+## Samsung phone + Samsung TV (Android)
 
-- **Target for Samsung TVs in this MVP:** **Android TV / Google TV** leanback
-  (`LEANBACK_LAUNCHER`, `android.software.leanback` already in the Android
-  manifest). Many Samsung living-room devices that run Google TV / Android TV
-  can install this Flutter Android build.
-- **Stock Flutter does not ship a Tizen target.** Native Tizen (older Samsung
-  Tizen-only models) would need a community / third-party **Tizen Flutter
-  plugin** or a separate Tizen Web app later — not included here.
-- Apple TV (tvOS) notes remain in [`docs/tvos.md`](docs/tvos.md).
+One Flutter Android **APK / AAB** installs on:
+
+- **Samsung Galaxy phone** — normal `LAUNCHER` home icon (USB debugging / Play Internal testing)
+- **Samsung Android TV / Google TV** — `LEANBACK_LAUNCHER` + TV banner on the Apps row
+
+**Install guide:** [`docs/samsung-install.md`](docs/samsung-install.md)  
+**TV short link:** [`docs/samsung-tv-install.md`](docs/samsung-tv-install.md)
+
+```sh
+# Release APK (sideload phone or TV) + optional Play App Bundle
+./scripts/build-android-release.sh
+# or:
+flutter build apk --release
+flutter build appbundle --release
+
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+# TV over Wi‑Fi: adb connect TV_IP:5555   then the same install command
+```
+
+- **Stock Flutter does not ship a Tizen target.** Pure Tizen-only Samsung TVs
+  cannot use this APK — community Tizen / Web later. Apple TV notes:
+  [`docs/tvos.md`](docs/tvos.md).
 
 ## Requirements
 
@@ -119,8 +133,12 @@ assets/
   brand/monvlog-logo-mark.jpg
   config/curated_channels.json
 docs/
+  samsung-install.md      # Samsung phone + TV install (ADB / Play)
+  samsung-tv-install.md   # TV-focused short link
   tvos.md
   screenshots/
+scripts/
+  build-android-release.sh
 ```
 
 ## Design notes

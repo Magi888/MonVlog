@@ -24,6 +24,7 @@ android {
         applicationId = "com.monvlog.monvlog"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // Android TV / Google TV leanback floor is API 21; Flutter's default is >= that.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
