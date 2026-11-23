@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../app/theme.dart';
 
-/// Overlapping red square logo mark (phone profile card).
+/// Red square MonVlog brand mark (phone profile card / identity).
 class MonVlogLogoMark extends StatelessWidget {
   const MonVlogLogoMark({
     super.key,
@@ -28,28 +27,13 @@ class MonVlogLogoMark extends StatelessWidget {
           ),
         ],
       ),
-      alignment: Alignment.center,
-      child: Padding(
-        padding: EdgeInsets.all(size * 0.12),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white, width: 1.6),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              'MonVlog',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.manrope(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: size * 0.18,
-                height: 1.05,
-                letterSpacing: -0.3,
-              ),
-            ),
-          ),
-        ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        'assets/brand/monvlog-logo.png',
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
       ),
     );
   }

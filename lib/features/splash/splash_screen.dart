@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../billing/purchases_stub.dart';
-import '../phone/widgets/monvlog_logo_mark.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,8 +27,8 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 900),
     );
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _scale = Tween<double>(begin: 0.86, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    _scale = Tween<double>(begin: 0.92, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
     _controller.forward();
     _gate();
@@ -55,58 +54,40 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final logoWidth = (width * 0.55).clamp(220.0, 420.0);
+
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              MonVlogTheme.brandRed,
-              MonVlogTheme.brandRedDeep,
-              Color(0xFF8B1A1A),
-            ],
-          ),
-        ),
-        child: FadeTransition(
-          opacity: _fade,
-          child: ScaleTransition(
-            scale: _scale,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const MonVlogLogoMark(size: 96),
-                const SizedBox(height: 28),
-                Text(
-                  'MonVlog',
-                  style: GoogleFonts.bebasNeue(
-                    fontSize: 64,
-                    letterSpacing: 2,
-                    color: Colors.white,
-                    height: 1,
+      backgroundColor: MonVlogTheme.brandRed,
+      body: ColoredBox(
+        color: MonVlogTheme.brandRed,
+        child: SizedBox.expand(
+          child: FadeTransition(
+            opacity: _fade,
+            child: ScaleTransition(
+              scale: _scale,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/brand/monvlog-logo-box.png',
+                    width: logoWidth,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Монголчуудын нэгдэл',
-                  style: GoogleFonts.manrope(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white.withValues(alpha: 0.9),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Watch anywhere, make anywhere',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.manrope(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 48),
-                const SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

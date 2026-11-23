@@ -6,7 +6,8 @@ UI on Android TV / Google TV (Samsung living-room path).
 
 **Product:** MonVlog / Monvlog.com  
 **Tagline:** Монголчуудын нэгдэл  
-**Brand red:** `#D32F2F` · coral accents `#E58A8A`  
+**Brand red:** `#E71616` · coral accents `#E58A8A`  
+**Tagline (splash):** Watch anywhere, make anywhere  
 **Price (later):** **$3.99/month** via RevenueCat (stubbed)  
 **Repo:** [Magi888/MonVlog](https://github.com/Magi888/MonVlog)
 
@@ -130,6 +131,10 @@ lib/
   platform/            # Android YouTube intent helper
 assets/
   promo/europe-tour-hero.jpg
+  brand/monvlog-logo.png          # launcher + in-app mark
+  brand/monvlog-logo-box.png      # splash wordmark
+  brand/monvlog-splash-mark.png   # native splash (logo + tagline)
+  brand/monvlog-tv-banner.png     # Android TV banner
   brand/monvlog-logo-mark.jpg
   config/curated_channels.json
 docs/
