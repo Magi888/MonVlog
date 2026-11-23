@@ -4,7 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 /// MonVlog brand + dual surfaces: phone community (Wix-like dark) and Netflix TV.
 class MonVlogTheme {
   // —— Brand ——
-  static const Color brandRed = Color(0xFFD32F2F);
+  /// Official logo / splash red (`assets/brand/monvlog-logo.png`).
+  static const Color brandRed = Color(0xFFE71616);
   static const Color brandRedDeep = Color(0xFFB71C1C);
   static const Color coral = Color(0xFFE58A8A);
   static const Color coralSoft = Color(0xFFF48FB1);

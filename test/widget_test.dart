@@ -25,8 +25,17 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(child: MonVlogApp()),
     );
-    expect(find.text('MonVlog'), findsWidgets);
-    expect(find.textContaining('Монголчуудын нэгдэл'), findsOneWidget);
+    expect(find.text('Watch anywhere, make anywhere'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w is Image &&
+            w.image is AssetImage &&
+            (w.image as AssetImage).assetName ==
+                'assets/brand/monvlog-logo-box.png',
+      ),
+      findsOneWidget,
+    );
 
     // Advance past splash gate (1.4s) and settle navigation + animations.
     await tester.pump(const Duration(milliseconds: 1500));

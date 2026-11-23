@@ -40,6 +40,27 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/brand/monvlog-logo.png
+  adaptive_icon_background: "#E71616"
+  adaptive_icon_foreground: assets/brand/monvlog-icon-foreground.png
+  remove_alpha_ios: true
+  background_color_ios: "#E71616"
+
+flutter_native_splash:
+  color: "#E71616"
+  image: assets/brand/monvlog-splash-mark.png
+  android: true
+  ios: true
+  android_12:
+    color: "#E71616"
+    image: assets/brand/monvlog-splash-mark.png
+  web: false
 
 flutter:
   uses-material-design: true
@@ -47,3 +68,6 @@ flutter:
     - assets/config/curated_channels.json
     - assets/promo/europe-tour-hero.jpg
     - assets/brand/monvlog-logo-mark.jpg
+    - assets/brand/monvlog-logo.png
+    - assets/brand/monvlog-logo-box.png
+    - assets/brand/monvlog-splash-mark.png
