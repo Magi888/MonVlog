@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../data/models/video_item.dart';
 import '../features/detail/video_detail_screen.dart';
-import '../features/home/home_screen.dart';
 import '../features/phone/phone_shell.dart';
 import '../features/splash/splash_screen.dart';
+import '../features/tv/tv_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -27,16 +27,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'phone-watch',
         builder: (context, state) => const PhoneShell(initialIndex: 1),
       ),
-      // TV leanback home (M0/M2) — preserved for Android TV / wide demos.
+      // Netflix-style TV leanback (Android TV / Google TV / Samsung living room).
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const TvShell(),
       ),
       GoRoute(
         path: '/tv',
         name: 'tv',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const TvShell(),
       ),
       GoRoute(
         path: '/detail',

@@ -1,10 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
+import '../../data/mock_channels.dart';
 import 'widgets/monvlog_logo_mark.dart';
 
-/// Phone community / profile home — matches MonVlog reference zagvar.
+/// Phone community shell — Wix Spaces Monvlog.com look (dark).
+/// Hero EUROPE TOUR, Invite/Оператор, tabs incl. МОНГОЛ ВЛОГ & КОНТЕНТ,
+/// All Video Channels cards.
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
 
@@ -18,10 +23,19 @@ class _CommunityScreenState extends State<CommunityScreen>
   late final Animation<double> _heroFade;
   late final Animation<Offset> _cardSlide;
   late final Animation<double> _logoScale;
+  late final TabController _tabs;
+
+  static const _tabLabels = [
+    'НҮҮР ХУУДАС',
+    'МОНГОЛ ВЛОГ & КОНТЕНТ',
+    'ОНЛАЙН ШОП',
+    'PREMIUM',
+  ];
 
   @override
   void initState() {
     super.initState();
+    _tabs = TabController(length: _tabLabels.length, vsync: this, initialIndex: 1);
     _enter = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 920),
@@ -50,6 +64,7 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   void dispose() {
+    _tabs.dispose();
     _enter.dispose();
     super.dispose();
   }
@@ -59,7 +74,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       SnackBar(
         content: Text('$label — mock (stubbed)'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: MonVlogTheme.navy,
+        backgroundColor: MonVlogTheme.communityElevated,
       ),
     );
   }
@@ -67,20 +82,19 @@ class _CommunityScreenState extends State<CommunityScreen>
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
-    final heroHeight = MediaQuery.sizeOf(context).height * 0.38;
+    final heroHeight = MediaQuery.sizeOf(context).height * 0.34;
 
     return Scaffold(
-      backgroundColor: MonVlogTheme.cardWhite,
+      backgroundColor: MonVlogTheme.communityBg,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
             child: SizedBox(
-              height: heroHeight + 168,
+              height: heroHeight + 196,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Full-bleed hero
                   Positioned(
                     top: 0,
                     left: 0,
@@ -90,17 +104,16 @@ class _CommunityScreenState extends State<CommunityScreen>
                       opacity: _heroFade,
                       child: _HeroBanner(
                         topInset: top,
-                        onChat: () => _stub('Chat'),
                         onBell: () => _stub('Notifications'),
                         onCart: () => _stub('Cart'),
+                        onMore: () => _stub('More'),
                       ),
                     ),
                   ),
-                  // Overlapping white profile card
                   Positioned(
                     left: 0,
                     right: 0,
-                    top: heroHeight - 36,
+                    top: heroHeight - 40,
                     child: SlideTransition(
                       position: _cardSlide,
                       child: _ProfileCard(
@@ -115,36 +128,32 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
           ),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Community',
-                    style: GoogleFonts.bebasNeue(
-                      fontSize: 28,
-                      color: MonVlogTheme.navy,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Монголчуудын нэгдэл — creators, tours, and live drops. '
-                    'YouTube + billing stay mocked in this zagvar.',
-                    style: GoogleFonts.manrope(
-                      fontSize: 14,
-                      height: 1.45,
-                      color: MonVlogTheme.memberGrey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _PromoStrip(onTap: () => _stub('Europe Tour')),
-                ],
-              ),
+            child: _CommunityTabs(controller: _tabs, labels: _tabLabels),
+          ),
+          SliverToBoxAdapter(
+            child: AnimatedBuilder(
+              animation: _tabs,
+              builder: (context, _) {
+                if (_tabs.index == 1) {
+                  return _VlogTabContent(
+                    onPost: () => _stub('Бичлэг байршуулая'),
+                    onViewChannel: (name) {
+                      context.go('/phone/watch');
+                      _stub('View Channel: $name');
+                    },
+                  );
+                }
+                if (_tabs.index == 0) {
+                  return _HomeTabContent(onPromo: () => _stub('AU-PAIR promo'));
+                }
+                return _StubTabBody(
+                  title: _tabLabels[_tabs.index],
+                  message: 'Mock tab — content lands later.',
+                );
+              },
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
       ),
     );
@@ -154,23 +163,23 @@ class _CommunityScreenState extends State<CommunityScreen>
 class _HeroBanner extends StatelessWidget {
   const _HeroBanner({
     required this.topInset,
-    required this.onChat,
     required this.onBell,
     required this.onCart,
+    required this.onMore,
   });
 
   final double topInset;
-  final VoidCallback onChat;
   final VoidCallback onBell;
   final VoidCallback onCart;
+  final VoidCallback onMore;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        DecoratedBox(
-          decoration: const BoxDecoration(
+        const DecoratedBox(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -187,27 +196,34 @@ class _HeroBanner extends StatelessWidget {
           alignment: const Alignment(0.15, -0.2),
           errorBuilder: (_, __, ___) => const SizedBox.shrink(),
         ),
-        // Soft bottom fade into card overlap
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0x00000000),
-                Color(0x22000000),
+                Color(0x33000000),
+                Color(0x66000000),
               ],
             ),
           ),
         ),
         Positioned(
-          top: topInset + 8,
-          right: 12,
+          top: topInset + 4,
+          left: 4,
+          child: IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          ),
+        ),
+        Positioned(
+          top: topInset + 4,
+          right: 4,
           child: Row(
             children: [
-              _HeroIcon(icon: Icons.chat_bubble_outline_rounded, onTap: onChat),
               _HeroIcon(icon: Icons.notifications_none_rounded, onTap: onBell),
               _HeroIcon(icon: Icons.shopping_cart_outlined, onTap: onCart),
+              _HeroIcon(icon: Icons.more_horiz_rounded, onTap: onMore),
             ],
           ),
         ),
@@ -254,20 +270,19 @@ class _ProfileCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: MonVlogTheme.cardWhite,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        color: MonVlogTheme.communitySurface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo overlaps hero / card seam
           Transform.translate(
             offset: const Offset(0, -28),
             child: ScaleTransition(
               scale: logoScale,
               alignment: Alignment.bottomLeft,
-              child: const MonVlogLogoMark(size: 76),
+              child: const MonVlogLogoMark(size: 72),
             ),
           ),
           Transform.translate(
@@ -278,11 +293,11 @@ class _ProfileCard extends StatelessWidget {
                 Text(
                   'Monvlog.com',
                   style: GoogleFonts.manrope(
-                    fontSize: 30,
+                    fontSize: 28,
                     fontWeight: FontWeight.w800,
-                    color: MonVlogTheme.navy,
+                    color: Colors.white,
                     height: 1.05,
-                    letterSpacing: -0.6,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -291,16 +306,7 @@ class _ProfileCard extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: MonVlogTheme.navySoft,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '2 Members',
-                  style: GoogleFonts.manrope(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: MonVlogTheme.memberGrey,
+                    color: Colors.white70,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -309,7 +315,7 @@ class _ProfileCard extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: onInvite,
-                        icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                        icon: const Icon(Icons.ios_share_rounded, size: 18),
                         label: const Text('Invite'),
                       ),
                     ),
@@ -331,70 +337,356 @@ class _ProfileCard extends StatelessWidget {
   }
 }
 
-class _PromoStrip extends StatelessWidget {
-  const _PromoStrip({required this.onTap});
+class _CommunityTabs extends StatelessWidget {
+  const _CommunityTabs({
+    required this.controller,
+    required this.labels,
+  });
 
-  final VoidCallback onTap;
+  final TabController controller;
+  final List<String> labels;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: MonVlogTheme.softGrey,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: MonVlogTheme.brandRed,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  'EU',
-                  style: GoogleFonts.bebasNeue(
-                    color: Colors.white,
-                    fontSize: 20,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      color: MonVlogTheme.communityBg,
+      child: TabBar(
+        controller: controller,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white54,
+        indicatorColor: MonVlogTheme.coral,
+        indicatorWeight: 3,
+        labelStyle: GoogleFonts.manrope(
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.2,
+        ),
+        unselectedLabelStyle: GoogleFonts.manrope(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        tabs: [for (final label in labels) Tab(text: label)],
+      ),
+    );
+  }
+}
+
+class _HomeTabContent extends StatelessWidget {
+  const _HomeTabContent({required this.onPromo});
+
+  final VoidCallback onPromo;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Зар Сурталчилгаа',
+            style: GoogleFonts.manrope(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Material(
+            color: MonVlogTheme.communityElevated,
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              onTap: onPromo,
+              borderRadius: BorderRadius.circular(14),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                   children: [
-                    Text(
-                      'EUROPE TOUR',
-                      style: GoogleFonts.bebasNeue(
-                        fontSize: 20,
-                        color: MonVlogTheme.navy,
-                        letterSpacing: 1,
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: MonVlogTheme.brandRed,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'AU',
+                        style: GoogleFonts.bebasNeue(
+                          color: Colors.white,
+                          fontSize: 24,
+                        ),
                       ),
                     ),
-                    Text(
-                      'Mock promo — tap for stub action',
-                      style: GoogleFonts.manrope(
-                        fontSize: 12,
-                        color: MonVlogTheme.memberGrey,
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AU-PAIR · Germany',
+                            style: GoogleFonts.manrope(
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            'Mock community promo banner',
+                            style: GoogleFonts.manrope(
+                              color: MonVlogTheme.memberGrey,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: MonVlogTheme.memberGrey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VlogTabContent extends StatelessWidget {
+  const _VlogTabContent({
+    required this.onPost,
+    required this.onViewChannel,
+  });
+
+  final VoidCallback onPost;
+  final ValueChanged<String> onViewChannel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Сануулга',
+            style: GoogleFonts.manrope(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: MonVlogTheme.memberGrey,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  'New Content Coming Soon!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Once Monvlog.com adds new content, you’ll be able to view it here.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.manrope(
+                    fontSize: 14,
+                    color: MonVlogTheme.memberGrey,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: onPost,
+                    child: const Text('Бичлэг байршуулая'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'All Video Channels',
+                  style: GoogleFonts.manrope(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => onViewChannel('Manage'),
+                icon: const Icon(Icons.menu_rounded, size: 18),
+                label: const Text('Manage'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  backgroundColor: MonVlogTheme.communityElevated,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          for (final channel in MockChannels.all)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: _ChannelCard(
+                channel: channel,
+                onView: () => onViewChannel(channel.name),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChannelCard extends StatelessWidget {
+  const _ChannelCard({
+    required this.channel,
+    required this.onView,
+  });
+
+  final MockVideoChannel channel;
+  final VoidCallback onView;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 7,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: channel.bannerUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) =>
+                      Container(color: MonVlogTheme.communityElevated),
+                  errorWidget: (_, __, ___) => Container(
+                    color: MonVlogTheme.communityElevated,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.live_tv_rounded, color: Colors.white38),
+                  ),
+                ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x66000000), Color(0x99000000)],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  top: 14,
+                  right: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        channel.name,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        '${channel.videoCount} Videos',
+                        style: GoogleFonts.manrope(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            color: MonVlogTheme.communityElevated,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                Text(
+                  channel.tier,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                FilledButton(
+                  onPressed: onView,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(channel.actionLabel),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StubTabBody extends StatelessWidget {
+  const _StubTabBody({required this.title, required this.message});
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.manrope(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.memberGrey,
+              fontSize: 14,
+            ),
+          ),
+        ],
       ),
     );
   }

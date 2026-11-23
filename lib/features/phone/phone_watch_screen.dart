@@ -10,7 +10,7 @@ import '../../data/catalog_repository.dart';
 import '../../data/models/shelf.dart';
 import '../../data/models/video_item.dart';
 
-/// Phone video shelves — reuses mock/live catalog; look-first layout.
+/// Phone Netflix-style Watch — dark horizontal content rails.
 class PhoneWatchScreen extends ConsumerWidget {
   const PhoneWatchScreen({super.key});
 
@@ -20,7 +20,7 @@ class PhoneWatchScreen extends ConsumerWidget {
     final top = MediaQuery.paddingOf(context).top;
 
     return Scaffold(
-      backgroundColor: MonVlogTheme.cardWhite,
+      backgroundColor: MonVlogTheme.bg,
       body: catalog.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: MonVlogTheme.brandRed),
@@ -28,7 +28,7 @@ class PhoneWatchScreen extends ConsumerWidget {
         error: (err, _) => Center(
           child: Text(
             'Catalog error: $err',
-            style: const TextStyle(color: MonVlogTheme.navy),
+            style: const TextStyle(color: MonVlogTheme.onBg),
           ),
         ),
         data: (snapshot) => _WatchBody(
@@ -55,67 +55,58 @@ class _WatchBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final source = snapshot.isMock ? 'Mock catalog' : 'Live YouTube';
+    final featured = snapshot.shelves.isNotEmpty &&
+            snapshot.shelves.first.items.isNotEmpty
+        ? snapshot.shelves.first.items.first
+        : null;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(20, topInset + 16, 20, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.fromLTRB(16, topInset + 12, 16, 8),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 10,
+              runSpacing: 8,
               children: [
                 Text(
-                  'Watch',
+                  'MonVlog',
                   style: GoogleFonts.bebasNeue(
-                    fontSize: 40,
-                    color: MonVlogTheme.navy,
-                    letterSpacing: 1.4,
-                    height: 1,
+                    fontSize: 28,
+                    color: MonVlogTheme.brandRed,
+                    letterSpacing: 1.2,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: MonVlogTheme.brandRed.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        source,
-                        style: GoogleFonts.manrope(
-                          color: MonVlogTheme.brandRed,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: MonVlogTheme.brandRed.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    source,
+                    style: GoogleFonts.manrope(
+                      color: MonVlogTheme.coral,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'No API key required',
-                      style: GoogleFonts.manrope(
-                        fontSize: 12,
-                        color: MonVlogTheme.memberGrey,
-                      ),
-                    ),
-                    if (snapshot.isMock) ...[
-                      const Spacer(),
-                      TextButton(
-                        onPressed: onRetry,
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
+                if (snapshot.isMock)
+                  TextButton(onPressed: onRetry, child: const Text('Retry')),
               ],
             ),
           ),
         ),
+        if (featured != null)
+          SliverToBoxAdapter(
+            child: _HeroPoster(
+              item: featured,
+              onTap: () => context.push('/detail', extra: featured),
+            ),
+          ),
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) => _PhoneShelf(shelf: snapshot.shelves[index]),
@@ -124,6 +115,81 @@ class _WatchBody extends StatelessWidget {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],
+    );
+  }
+}
+
+class _HeroPoster extends StatelessWidget {
+  const _HeroPoster({required this.item, required this.onTap});
+
+  final VideoItem item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+      child: GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CachedNetworkImage(
+                  imageUrl: item.thumbnailUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) =>
+                      Container(color: MonVlogTheme.surface),
+                  errorWidget: (_, __, ___) =>
+                      Container(color: MonVlogTheme.surface),
+                ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Color(0xCC0B0B0F),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  right: 14,
+                  bottom: 14,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        item.channelName,
+                        style: GoogleFonts.manrope(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -141,23 +207,23 @@ class _PhoneShelf extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
             child: Text(
               shelf.title,
               style: GoogleFonts.manrope(
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w800,
-                color: MonVlogTheme.navy,
+                color: Colors.white,
               ),
             ),
           ),
           SizedBox(
-            height: 168,
+            height: 148,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: shelf.items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, index) {
                 return _PhonePoster(item: shelf.items[index]);
               },
@@ -179,48 +245,42 @@ class _PhonePoster extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/detail', extra: item),
       child: SizedBox(
-        width: 220,
+        width: 200,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     CachedNetworkImage(
                       imageUrl: item.thumbnailUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: MonVlogTheme.softGrey,
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.movie_outlined,
-                          color: MonVlogTheme.memberGrey,
-                        ),
-                      ),
+                      placeholder: (_, __) =>
+                          Container(color: MonVlogTheme.surface),
                       errorWidget: (_, __, ___) => Container(
-                        color: MonVlogTheme.softGrey,
+                        color: MonVlogTheme.surface,
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.broken_image_outlined,
-                          color: MonVlogTheme.memberGrey,
+                          color: MonVlogTheme.muted,
                         ),
                       ),
                     ),
                     if (item.durationLabel.isNotEmpty)
                       Positioned(
-                        right: 8,
-                        bottom: 8,
+                        right: 6,
+                        bottom: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
+                            horizontal: 5,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.78),
-                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.black.withValues(alpha: 0.82),
+                            borderRadius: BorderRadius.circular(3),
                           ),
                           child: Text(
                             item.durationLabel,
@@ -236,15 +296,15 @@ class _PhonePoster extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               item.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.manrope(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: MonVlogTheme.navy,
+                color: Colors.white,
               ),
             ),
             Text(
@@ -252,8 +312,8 @@ class _PhonePoster extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.manrope(
-                fontSize: 12,
-                color: MonVlogTheme.memberGrey,
+                fontSize: 11,
+                color: MonVlogTheme.muted,
               ),
             ),
           ],

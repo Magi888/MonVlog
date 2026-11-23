@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:monvlog/app/theme.dart';
+import 'package:monvlog/data/catalog_providers.dart';
+import 'package:monvlog/data/catalog_repository.dart';
+import 'package:monvlog/data/mock_catalog.dart';
+import 'package:monvlog/data/models/curated_channel.dart';
 import 'package:monvlog/features/phone/phone_shell.dart';
 
 void main() {
@@ -12,8 +16,22 @@ void main() {
   });
 
   testWidgets('Watch tab shows mock catalog shelves', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          homeCatalogProvider.overrideWith((ref) async {
+            return CatalogSnapshot(
+              shelves: MockCatalog.shelves,
+              channels: const <CuratedChannel>[],
+              source: CatalogSource.mock,
+            );
+          }),
+        ],
         child: MaterialApp(
           theme: MonVlogTheme.phone,
           home: const PhoneShell(initialIndex: 1),
@@ -21,13 +39,12 @@ void main() {
       ),
     );
 
-    for (var i = 0; i < 60; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-      if (find.text('Featured').evaluate().isNotEmpty) break;
-    }
+    await tester.pumpAndSettle();
 
     expect(find.text('Featured'), findsOneWidget);
-    expect(find.text('New from creators'), findsOneWidget);
     expect(find.textContaining('Mock'), findsWidgets);
+    await tester.drag(find.byType(CustomScrollView).first, const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(find.text('New from creators'), findsOneWidget);
   });
 }

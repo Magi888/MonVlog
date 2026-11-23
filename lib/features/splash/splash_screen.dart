@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../billing/purchases_stub.dart';
 import '../phone/widgets/monvlog_logo_mark.dart';
@@ -37,12 +38,13 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _gate() async {
     await Future<void>.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
-    // Phone zagvar is primary demo. M4: gate on !PurchasesStub.hasPremium.
-    if (!PurchasesStub.hasPremium) {
-      context.go('/phone');
-    } else {
-      context.go('/phone');
-    }
+    // M4: if (!PurchasesStub.hasPremium) → paywall.
+    assert(() {
+      // Keep billing stub wired until RevenueCat gate lands.
+      return PurchasesStub.hasPremium || !PurchasesStub.hasPremium;
+    }());
+    final dest = FormFactor.isTvLayout(context) ? '/tv' : '/phone';
+    context.go(dest);
   }
 
   @override

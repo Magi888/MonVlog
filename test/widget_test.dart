@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,11 @@ void main() {
 
   testWidgets('MonVlog splash shows brand then phone community mockup',
       (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       const ProviderScope(child: MonVlogApp()),
     );
@@ -24,7 +30,9 @@ void main() {
     expect(find.text('Monvlog.com'), findsOneWidget);
     expect(find.text('Invite'), findsOneWidget);
     expect(find.text('Оператор'), findsOneWidget);
-    expect(find.text('Community'), findsWidgets);
+    expect(find.text('МОНГОЛ ВЛОГ & КОНТЕНТ'), findsOneWidget);
+    expect(find.text('All Video Channels'), findsOneWidget);
+    expect(find.text('Community'), findsOneWidget);
     expect(find.text('Watch'), findsOneWidget);
   });
 }

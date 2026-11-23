@@ -13,10 +13,11 @@ class MonVlogApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'MonVlog',
       debugShowCheckedModeBanner: false,
-      // Phone mockup is the primary visual demo; TV screens still use dark tokens.
+      // Dark community + Netflix TV share dark Mode; phone ThemeData carries
+      // coral accents for the Wix-like community shell.
       theme: MonVlogTheme.phone,
       darkTheme: MonVlogTheme.dark,
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.dark,
       routerConfig: router,
     );
   }
