@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "source": "in-repo",
+  "remoteUrlHint": "Optional override via --dart-define=CURATED_CHANNELS_URL=https://...",
+  "channels": [
+    {
+      "channelId": "UCQXxhQHalYjwMictp1lUbtg",
+      "handle": "@GremixBn",
+      "displayName": "Gremix",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@GremixBn"
+    },
+    {
+      "channelId": "UCXr6n3L8EDVQR-_EUJc-2Nw",
+      "handle": "@positivemongolians",
+      "displayName": "Positive Mongolians",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@positivemongolians"
+    },
+    {
+      "channelId": "UCIsvomXQNyFRjpAP_GyWI-Q",
+      "handle": "@tselmegvlog",
+      "displayName": "Tselmeg Vlog",
+      "category": "travel",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@tselmegvlog"
+    },
+    {
+      "channelId": "UCdgDF-2qexbSiY43y9VucPQ",
+      "handle": "@damisuna",
+      "displayName": "Damisuna",
+      "category": "travel",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@damisuna"
+    },
+    {
+      "channelId": "UCGIBXzRcXQnjEK6z2sX2Olw",
+      "handle": "@tugo116",
+      "displayName": "Tugo OneSixteen",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@tugo116"
+    },
+    {
+      "channelId": "UCrSuAX_UEQYcPsHMnMaY7Eg",
+      "handle": "@Manduulero",
+      "displayName": "MANDUULERO",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Manduulero"
+    },
+    {
+      "channelId": "UC7Ructd8zu_miQx033S-VNg",
+      "handle": "@dualzet",
+      "displayName": "Dual Zet",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@dualzet"
+    },
+    {
+      "channelId": "UCPohqU-zrv_NeazUbv1igvQ",
+      "handle": "@BERXEE",
+      "displayName": "BERXEE",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@BERXEE"
+    },
+    {
+      "channelId": "UCs1pOlpYOxXYHLe1KYbmUpg",
+      "handle": "@KhulanNemekhbayar",
+      "displayName": "Khulan Nemekhbayar",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@KhulanNemekhbayar"
+    },
+    {
+      "channelId": "UCk6TgWCg9Qk8F23g4fDjV7w",
+      "handle": "@TechNomadGaming",
+      "displayName": "TechNomad Gaming",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@TechNomadGaming"
+    },
+    {
+      "channelId": "UCYUmB6ZqIPTmG52AUE9-8fA",
+      "handle": "@GanaaChannel",
+      "displayName": "Ganaa's Channel",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@GanaaChannel"
+    },
+    {
+      "channelId": "UC72EkYiCa5wryeUkHzL4BAQ",
+      "handle": "@PlaytimeFestival",
+      "displayName": "Playtime Festival",
+      "category": "food",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@PlaytimeFestival"
+    },
+    {
+      "channelId": "UC40GF9yhf8yQy1w-kFXzK-Q",
+      "handle": "@thehu",
+      "displayName": "The Hu",
+      "category": "featured",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@thehu"
+    },
+    {
+      "channelId": "UCTV_Tu_9vDB-SEC_xzwh30Q",
+      "handle": "@TheLemons",
+      "displayName": "The Lemons",
+      "category": "featured",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@TheLemons"
+    },
+    {
+      "channelId": "UCN42VK5CyAoKQOhjHOksr_g",
+      "handle": "@Jargaa",
+      "displayName": "Jargaa",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Jargaa"
+    },
+    {
+      "channelId": "UCWN6Mo5JW8LtNYrBmPAGTfw",
+      "handle": "@BeSTstudioofficial",
+      "displayName": "BeST studio official",
+      "category": "featured",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@BeSTstudioofficial"
+    },
+    {
+      "channelId": "UC-neIomE352otznVhgUi4uQ",
+      "handle": "@MongolianMusic",
+      "displayName": "Mongolian Music",
+      "category": "featured",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@MongolianMusic"
+    },
+    {
+      "channelId": "UCU3d-oPUkqmnoCCU0UJ9MNQ",
+      "handle": "@Erchis",
+      "displayName": "Erchis",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Erchis"
+    },
+    {
+      "channelId": "UCyoqZj5Ji7bWUNjUjyd0R_Q",
+      "handle": "@Biggiezzz",
+      "displayName": "Biggiezzz",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Biggiezzz"
+    },
+    {
+      "channelId": "UC4zVqdgpPCSAxTVa3xtro7Q",
+      "handle": "@Magnolian",
+      "displayName": "Magnolian",
+      "category": "featured",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Magnolian"
+    },
+    {
+      "channelId": "UC4n_cYKgfIgro-5bCFoeOqQ",
+      "handle": "@Mykes",
+      "displayName": "Mykes",
+      "category": "daily",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Mykes"
+    },
+    {
+      "channelId": "UCDBSbL76eZ0Q3BJ6p6G2xrg",
+      "handle": "@Skywoker",
+      "displayName": "Skywoker Archives",
+      "category": "travel",
+      "verified": true,
+      "notes": "Public UC ID verified via youtube.com/@Skywoker"
+    },
+    {
+      "channelId": "UC________________STUB01",
+      "handle": "@REPLACE_me_ger_life",
+      "displayName": "Ger Life Vlogs (STUB)",
+      "category": "daily",
+      "verified": false,
+      "notes": "STUB — replace channelId with a real UC… ID before production. Placeholder for editorial seed."
+    },
+    {
+      "channelId": "UC________________STUB02",
+      "handle": "@REPLACE_me_taste_of_mn",
+      "displayName": "Taste of MN (STUB)",
+      "category": "food",
+      "verified": false,
+      "notes": "STUB — replace channelId with a real UC… ID before production. Food/vlog editorial placeholder."
+    },
+    {
+      "channelId": "UC________________STUB03",
+      "handle": "@REPLACE_me_steppe_travels",
+      "displayName": "Steppe Travels (STUB)",
+      "category": "travel",
+      "verified": false,
+      "notes": "STUB — replace channelId with a real UC… ID before production. Travel editorial placeholder."
+    }
+  ]
+}

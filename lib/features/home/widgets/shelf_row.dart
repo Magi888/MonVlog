@@ -22,23 +22,23 @@ class ShelfRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(48, 0, 48, 12),
+            padding: const EdgeInsets.fromLTRB(36, 0, 48, 12),
             child: Text(
               shelf.title,
               style: const TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: MonVlogTheme.onBg,
               ),
             ),
           ),
           SizedBox(
-            height: 220,
+            height: 240,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 48),
+              padding: const EdgeInsets.symmetric(horizontal: 36),
               itemCount: shelf.items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
+              separatorBuilder: (_, __) => const SizedBox(width: 14),
               itemBuilder: (context, index) {
                 return PosterCard(
                   item: shelf.items[index],

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
 import '../../../data/models/video_item.dart';
@@ -24,15 +25,7 @@ class _PosterCardState extends State<PosterCard> {
   bool _focused = false;
 
   void _onActivate() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${widget.item.title} · ${widget.item.channelName} '
-          '(player arrives in M3)',
-        ),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    context.push('/detail', extra: widget.item);
   }
 
   Future<void> _onLongSelect() async {
@@ -43,7 +36,7 @@ class _PosterCardState extends State<PosterCard> {
   Widget build(BuildContext context) {
     final scale = _focused ? 1.06 : 1.0;
     final border = _focused
-        ? Border.all(color: MonVlogTheme.accent, width: 3)
+        ? Border.all(color: MonVlogTheme.focusRing, width: 3)
         : Border.all(color: Colors.transparent, width: 3);
 
     return FocusableActionDetector(
@@ -71,11 +64,20 @@ class _PosterCardState extends State<PosterCard> {
           curve: Curves.easeOut,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 140),
-            width: 320,
+            width: 280,
             decoration: BoxDecoration(
               border: border,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
               color: MonVlogTheme.surface,
+              boxShadow: _focused
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : null,
             ),
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -138,7 +140,7 @@ class _PosterCardState extends State<PosterCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: MonVlogTheme.onBg,
                         ),
@@ -149,7 +151,7 @@ class _PosterCardState extends State<PosterCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: MonVlogTheme.muted,
                         ),
                       ),

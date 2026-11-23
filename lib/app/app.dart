@@ -13,7 +13,11 @@ class MonVlogApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'MonVlog',
       debugShowCheckedModeBanner: false,
-      theme: MonVlogTheme.dark,
+      // Dark community + Netflix TV share dark Mode; phone ThemeData carries
+      // coral accents for the Wix-like community shell.
+      theme: MonVlogTheme.phone,
+      darkTheme: MonVlogTheme.dark,
+      themeMode: ThemeMode.dark,
       routerConfig: router,
     );
   }
