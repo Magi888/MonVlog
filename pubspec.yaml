@@ -48,18 +48,23 @@ flutter_launcher_icons:
   ios: true
   image_path: assets/brand/monvlog-logo.png
   adaptive_icon_background: "#E71616"
+  # Transparent white mark; inset supplies adaptive safe zone (avoid double padding).
   adaptive_icon_foreground: assets/brand/monvlog-icon-foreground.png
+  adaptive_icon_foreground_inset: 16
   remove_alpha_ios: true
   background_color_ios: "#E71616"
 
 flutter_native_splash:
   color: "#E71616"
+  # Transparent white logo + tagline (no red fill → no washout square on #E71616).
   image: assets/brand/monvlog-splash-mark.png
   android: true
   ios: true
   android_12:
     color: "#E71616"
-    image: assets/brand/monvlog-splash-mark.png
+    icon_background_color: "#E71616"
+    # Square logo-only mark — Android 12 clips splash to a circle.
+    image: assets/brand/monvlog-splash-android12.png
   web: false
 
 flutter:
