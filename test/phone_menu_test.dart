@@ -30,6 +30,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
+    // Splash → branded entry login → guest enters the phone shell.
+    await tester.tap(find.text('Continue as guest'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
     void expectMenu() {
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(

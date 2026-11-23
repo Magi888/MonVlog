@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../data/models/video_item.dart';
 import '../../platform/youtube_intent.dart';
+
+String _browseHome(BuildContext context) =>
+    FormFactor.isTvLayout(context) ? '/tv' : '/phone';
 
 /// TV detail: metadata + primary Play action (playback arrives in M3).
 class VideoDetailScreen extends StatefulWidget {
@@ -75,7 +79,7 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
                 if (context.canPop()) {
                   context.pop();
                 } else {
-                  context.go('/home');
+                  context.go(_browseHome(context));
                 }
                 return null;
               },
@@ -177,7 +181,7 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
                               if (context.canPop()) {
                                 context.pop();
                               } else {
-                                context.go('/home');
+                                context.go(_browseHome(context));
                               }
                             },
                           ),

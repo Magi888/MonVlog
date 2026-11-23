@@ -58,10 +58,14 @@ flutter build apk --release \
 
 ```sh
 adb devices
-adb install -r build/app/outputs/flutter-apk/app-release.apk
+# Prefer a clean reinstall if you previously saw "MVP shell" without a bottom menu:
+adb uninstall com.monvlog.monvlog
+adb install build/app/outputs/flutter-apk/app-release.apk
+# Or overwrite in place:
+# adb install -r build/app/outputs/flutter-apk/app-release.apk
 ```
 
-5. Open **MonVlog** from the app drawer. Phone UI uses the community / Watch shell (`/phone`).
+5. Open **MonVlog** from the app drawer. After splash → **Continue as guest**, you land on the phone shell (`/phone`) with the bottom **Community / Watch / Profile** menu. If you still see **MVP shell · Mock catalog** with no bottom bar, the old APK is still installed — uninstall and reinstall (steps above).
 
 **“Install blocked” / unknown sources:** on newer One UI, ADB installs are usually allowed when USB debugging is on. If you copy the APK via file share instead, enable install from that source when Android asks.
 
@@ -158,11 +162,12 @@ flutter pub get
 ./scripts/build-android-release.sh
 ```
 
-**Samsung phone:**
+**Samsung phone (clean reinstall if menu missing):**
 
 ```sh
 adb devices
-adb install -r build/app/outputs/flutter-apk/app-release.apk
+adb uninstall com.monvlog.monvlog
+adb install build/app/outputs/flutter-apk/app-release.apk
 ```
 
 **Samsung Google TV / Android TV:**
