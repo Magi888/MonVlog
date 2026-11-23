@@ -129,17 +129,37 @@ class MonVlogTheme {
           ),
         ),
       ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: communityBg,
-        indicatorColor: coral.withValues(alpha: 0.18),
-        labelTextStyle: WidgetStatePropertyAll(
-          GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w600),
-        ),
-      ),
+      navigationBarTheme: _phoneNavigationBarTheme,
+    );
+  }
+
+  /// High-contrast phone bottom menu — works under [ThemeMode.dark] too.
+  static NavigationBarThemeData get _phoneNavigationBarTheme {
+    return NavigationBarThemeData(
+      backgroundColor: communityBg,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: coral.withValues(alpha: 0.22),
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return IconThemeData(
+          size: 24,
+          color: selected ? coral : onBg,
+        );
+      }),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return GoogleFonts.manrope(
+          fontSize: 12,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+          color: selected ? coral : onBg,
+        );
+      }),
     );
   }
 
   /// TV Netflix dark theme: large type, high-contrast focus rings.
+  /// Includes the phone [NavigationBarTheme] so a dark [ThemeMode] cannot
+  /// wash out Community / Watch / Profile labels (dark-on-dark).
   static ThemeData get dark {
     final base = ThemeData(
       useMaterial3: true,
@@ -150,6 +170,7 @@ class MonVlogTheme {
         onPrimary: onBg,
         secondary: muted,
         onSurface: onBg,
+        onSurfaceVariant: onBg,
       ),
       scaffoldBackgroundColor: bg,
       focusColor: focusRing.withValues(alpha: 0.35),
@@ -169,6 +190,7 @@ class MonVlogTheme {
           letterSpacing: 1.2,
         ),
       ),
+      navigationBarTheme: _phoneNavigationBarTheme,
     );
   }
 }

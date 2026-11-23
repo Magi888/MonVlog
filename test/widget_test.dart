@@ -48,5 +48,13 @@ void main() {
     expect(find.text('All Video Channels'), findsOneWidget);
     expect(find.text('Community'), findsOneWidget);
     expect(find.text('Watch'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('Browsing as guest'), findsOneWidget);
+    expect(find.text('Continue as guest'), findsNothing);
+    expect(find.byType(NavigationBar), findsOneWidget);
   });
 }

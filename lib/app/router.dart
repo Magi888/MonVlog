@@ -38,15 +38,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
+      // NoTransitionPage keeps a single bottom menu — Material page
+      // transitions would briefly stack two PhoneShell NavigationBars.
       GoRoute(
         path: '/phone',
         name: 'phone',
-        builder: (context, state) => const PhoneShell(),
+        pageBuilder: (context, state) => const NoTransitionPage<void>(
+          child: PhoneShell(),
+        ),
       ),
       GoRoute(
         path: '/phone/watch',
         name: 'phone-watch',
-        builder: (context, state) => const PhoneShell(initialIndex: 1),
+        pageBuilder: (context, state) => const NoTransitionPage<void>(
+          child: PhoneShell(initialIndex: 1),
+        ),
+      ),
+      GoRoute(
+        path: '/phone/profile',
+        name: 'phone-profile',
+        pageBuilder: (context, state) => const NoTransitionPage<void>(
+          child: PhoneShell(initialIndex: 2),
+        ),
       ),
       // Netflix-style TV leanback (Android TV / Google TV / Samsung living room).
       GoRoute(

@@ -19,9 +19,10 @@ class PhoneWatchScreen extends ConsumerWidget {
     final catalog = ref.watch(homeCatalogProvider);
     final top = MediaQuery.paddingOf(context).top;
 
-    return Scaffold(
-      backgroundColor: MonVlogTheme.bg,
-      body: catalog.when(
+    // Body-only — [PhoneShell] owns the Scaffold + bottom menu.
+    return ColoredBox(
+      color: MonVlogTheme.bg,
+      child: catalog.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: MonVlogTheme.brandRed),
         ),

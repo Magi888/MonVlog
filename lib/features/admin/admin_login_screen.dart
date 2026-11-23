@@ -185,6 +185,17 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           ),
                   ),
                   const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => context.go('/phone'),
+                    child: Text(
+                      'Continue as guest',
+                      style: GoogleFonts.manrope(
+                        fontWeight: FontWeight.w700,
+                        color: MonVlogTheme.coral,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     'Password is supplied via --dart-define=ADMIN_PASSWORD '
                     '(bootstrapped into secure storage on first run). '
