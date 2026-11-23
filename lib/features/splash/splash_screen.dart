@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../billing/purchases_stub.dart';
 
@@ -42,8 +41,8 @@ class _SplashScreenState extends State<SplashScreen>
       // Keep billing stub wired until RevenueCat gate lands.
       return PurchasesStub.hasPremium || !PurchasesStub.hasPremium;
     }());
-    final dest = FormFactor.isTvLayout(context) ? '/tv' : '/phone';
-    context.go(dest);
+    // Entry gate: branded login. Admin → catalog; guest → home/community.
+    context.go('/admin/login');
   }
 
   @override
@@ -55,7 +54,9 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final logoWidth = (width * 0.55).clamp(220.0, 420.0);
+    // Match splash ref: crisp white MONVLOG box ~58% width, readable tagline.
+    final logoWidth = (width * 0.58).clamp(240.0, 440.0);
+    final taglineSize = (width * 0.038).clamp(15.0, 20.0);
 
     return Scaffold(
       backgroundColor: MonVlogTheme.brandRed,
@@ -75,15 +76,16 @@ class _SplashScreenState extends State<SplashScreen>
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.high,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 22),
                   Text(
                     'Watch anywhere, make anywhere',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.manrope(
-                      fontSize: 16,
+                      fontSize: taglineSize,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
-                      height: 1.2,
+                      height: 1.25,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],

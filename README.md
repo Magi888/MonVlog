@@ -19,9 +19,9 @@ UI on Android TV / Google TV (Samsung living-room path).
 | **Phone Watch** | Watch tab / `/phone/watch` | Netflix-style dark horizontal rails (mock catalog) |
 | **Phone Profile** | Profile tab / `/phone/profile` | Guest account + admin sign-in entry (bottom menu always visible) |
 | **TV / Samsung living room** | `/tv` or `/home` | Left rail + focusable shelves; **no** phone bottom bar |
-| **Admin login** | `/admin/login` | Seeded admin email + password (see below) |
+| **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login or **Continue as guest** |
 | **Admin catalog** | `/admin/catalog` | Search YouTube channels/playlists → add to curated catalog (admin only) |
-| Splash | `/splash` | Routes phone vs TV by viewport |
+| Splash | `/splash` | Brand splash → entry login |
 
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
 Without `YOUTUBE_API_KEY`, admin channel search shows **mock results** with a clear UI banner.
@@ -70,7 +70,7 @@ flutter pub get
 flutter run -d chrome --web-browser-flag "--window-size=390,844"
 ```
 
-Flow: splash → **Community** (Wix-like) → **Watch** tab for Netflix rails.
+Flow: splash → **Login** → **Continue as guest** → **Community** (Wix-like) → **Watch** tab.
 
 ### TV Netflix shell on Chrome
 
@@ -78,7 +78,7 @@ Flow: splash → **Community** (Wix-like) → **Watch** tab for Netflix rails.
 flutter run -d chrome --web-browser-flag "--window-size=1280,720"
 ```
 
-Wide viewport splash routes to `/tv` (left rail + shelves). Or open `/tv` directly.
+Wide viewport: splash → login → **Continue as guest** → `/home` (TV shell). Or open `/tv` / `/home` directly.
 
 ### Live YouTube shelves (optional)
 
@@ -109,8 +109,10 @@ flutter run -d chrome \
   --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
 ```
 
-- Open **Admin** from the phone top-right icon, TV **Settings → Admin sign-in**, or `/admin/login`.
-- Only the admin session can open `/admin/catalog` (role gate). Everyone else browses shelves read-only.
+- App opens on the branded **Login** screen after splash. Sign in as admin, or tap **Continue as guest**.
+- Admin login goes to `/admin/catalog`. Guests go to phone **Community** (`/phone`) or TV home (`/home`).
+- You can also open Admin from the phone top-right icon, TV **Settings → Admin sign-in**, or `/admin/login`.
+- Only the admin session can open `/admin/catalog` (role gate). Guests browse shelves read-only.
 - Added channels/playlists merge into local JSON overrides (`SharedPreferences`) on top of `assets/config/curated_channels.json` (same shape as optional remote `CURATED_CHANNELS_URL`).
 - Videos are auto-categorized into Travel / Food / Daily / Featured shelves via title/description heuristics.
 
@@ -125,7 +127,7 @@ lib/
     phone/             # Community (Wix-like) + Watch rails + shell
     tv/                # Netflix left-rail shell + billboard
     home/              # shared focusable shelf / poster widgets
-    splash/            # brand splash → /phone or /tv
+    splash/            # brand splash → /admin/login entry gate
     detail/            # video detail (shared)
   data/                # curated JSON, catalog store, categorizer, YouTube client
   billing/             # RevenueCat stub — no API keys
