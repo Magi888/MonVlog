@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../billing/purchases_stub.dart';
 
@@ -42,8 +41,8 @@ class _SplashScreenState extends State<SplashScreen>
       // Keep billing stub wired until RevenueCat gate lands.
       return PurchasesStub.hasPremium || !PurchasesStub.hasPremium;
     }());
-    final dest = FormFactor.isTvLayout(context) ? '/tv' : '/phone';
-    context.go(dest);
+    // Entry gate: branded login. Admin → catalog; guest → home/community.
+    context.go('/admin/login');
   }
 
   @override

@@ -21,12 +21,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isAdmin = ref.read(isAdminProvider);
       final path = state.uri.path;
-      final loggingIn = path == '/admin/login';
+      final loggingIn = path == '/admin/login' || path == '/login';
       final adminArea = path.startsWith('/admin');
 
+      // Catalog (and other /admin/* except login) require an admin session.
       if (adminArea && !loggingIn && !isAdmin) {
         return '/admin/login';
       }
+      // Already signed in as admin → skip the entry form.
       if (loggingIn && isAdmin) {
         return '/admin/catalog';
       }
@@ -58,6 +60,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/tv',
         name: 'tv',
         builder: (context, state) => const TvShell(),
+      ),
+      GoRoute(
+        path: '/login',
+        name: 'login',
+        builder: (context, state) => const AdminLoginScreen(),
       ),
       GoRoute(
         path: '/admin/login',
