@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../models/video_item.dart';
 import 'youtube_config.dart';
+import 'youtube_id_parser.dart';
 import 'youtube_search_models.dart';
 
 /// Thin YouTube Data API v3 client (channels → uploads playlist → videos).
@@ -212,6 +213,113 @@ class YoutubeApiClient {
         .map((raw) => YoutubeChannelMeta.fromJson(Map<String, dynamic>.from(raw)))
         .where((c) => c.id.isNotEmpty && c.uploadsPlaylistId.isNotEmpty)
         .toList();
+  }
+
+  /// Resolve a pasted channel URL / id / @handle into [YoutubeChannelMeta].
+  ///
+  /// Without [apiKey]:
+  /// - bare `/channel/UC…` still links with mock metadata
+  /// - `@handle` / `/c/` / `/user/` need a key → [YoutubeChannelResolveResult.needsApiKey]
+  Future<YoutubeChannelResolveResult> resolveChannel(
+    YoutubeChannelRef ref,
+  ) async {
+    if (!isConfigured) {
+      if (ref.isChannelId) {
+        return YoutubeChannelResolveResult(
+          channel: YoutubeChannelMeta(
+            id: ref.value,
+            title: 'Linked channel (${ref.value})',
+            uploadsPlaylistId: '',
+            description:
+                'Mock channel meta — pass --dart-define=YOUTUBE_API_KEY=... for live details.',
+            thumbnailUrl:
+                'https://picsum.photos/seed/${ref.value.hashCode}/240/240',
+            handle: '',
+            isMock: true,
+          ),
+        );
+      }
+      return YoutubeChannelResolveResult(
+        needsApiKey: true,
+        message:
+            'YOUTUBE_API_KEY missing — @handle /c/ /user/ URLs need the API. '
+            'Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.',
+      );
+    }
+
+    try {
+      YoutubeChannelMeta? meta;
+      switch (ref.kind) {
+        case YoutubeChannelRefKind.channelId:
+          meta = await _channelsListOne(id: ref.value);
+        case YoutubeChannelRefKind.handle:
+          meta = await _channelsListOne(forHandle: ref.value);
+        case YoutubeChannelRefKind.username:
+          meta = await _channelsListOne(forUsername: ref.value);
+        case YoutubeChannelRefKind.customUrl:
+          // /c/ slugs often match handle or legacy username; fall back to search.
+          meta = await _channelsListOne(forHandle: ref.value) ??
+              await _channelsListOne(forUsername: ref.value) ??
+              await _searchChannelByName(ref.value);
+      }
+
+      if (meta == null || meta.id.isEmpty) {
+        return YoutubeChannelResolveResult(
+          message: 'No YouTube channel found for ${ref.displayLabel}.',
+        );
+      }
+      return YoutubeChannelResolveResult(channel: meta);
+    } catch (e) {
+      return YoutubeChannelResolveResult(
+        message: 'YouTube channel lookup failed ($e).',
+      );
+    }
+  }
+
+  Future<YoutubeChannelMeta?> _channelsListOne({
+    String? id,
+    String? forHandle,
+    String? forUsername,
+  }) async {
+    final queryParameters = <String, dynamic>{
+      'part': 'snippet,contentDetails',
+      'key': apiKey,
+      'maxResults': 1,
+      if (id != null) 'id': id,
+      if (forHandle != null) 'forHandle': forHandle,
+      if (forUsername != null) 'forUsername': forUsername,
+    };
+
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/channels',
+      queryParameters: queryParameters,
+    );
+    final items = response.data?['items'] as List<dynamic>? ?? const [];
+    if (items.isEmpty) return null;
+    final raw = items.first;
+    if (raw is! Map) return null;
+    final meta = YoutubeChannelMeta.fromJson(Map<String, dynamic>.from(raw));
+    return meta.id.isEmpty ? null : meta;
+  }
+
+  Future<YoutubeChannelMeta?> _searchChannelByName(String query) async {
+    final hits = await _searchList(
+      query: query,
+      type: 'channel',
+      maxResults: 1,
+    );
+    if (hits.isEmpty) return null;
+    final hit = hits.first;
+    if (hit.id.isEmpty) return null;
+    return await _channelsListOne(id: hit.id) ??
+        YoutubeChannelMeta(
+          id: hit.id,
+          title: hit.title,
+          uploadsPlaylistId: '',
+          description: hit.description,
+          thumbnailUrl: hit.thumbnailUrl,
+          handle: '',
+        );
   }
 
   /// `playlists.list` — resolve title / channel for a playlist ID (URL link flow).
@@ -466,6 +574,9 @@ class YoutubeChannelMeta {
     required this.uploadsPlaylistId,
     this.description = '',
     this.thumbnailUrl = '',
+    this.handle = '',
+    this.customUrl = '',
+    this.isMock = false,
   });
 
   final String id;
@@ -473,6 +584,9 @@ class YoutubeChannelMeta {
   final String uploadsPlaylistId;
   final String description;
   final String thumbnailUrl;
+  final String handle;
+  final String customUrl;
+  final bool isMock;
 
   factory YoutubeChannelMeta.fromJson(Map<String, dynamic> json) {
     final id = json['id'] as String? ?? '';
@@ -485,14 +599,35 @@ class YoutubeChannelMeta {
     final related = content['relatedPlaylists'] is Map
         ? Map<String, dynamic>.from(content['relatedPlaylists'] as Map)
         : const <String, dynamic>{};
+    final rawHandle = (snippet['customUrl'] as String? ?? '').trim();
+    final handle = rawHandle.startsWith('@')
+        ? rawHandle.substring(1)
+        : rawHandle;
     return YoutubeChannelMeta(
       id: id,
       title: snippet['title'] as String? ?? '',
       uploadsPlaylistId: related['uploads'] as String? ?? '',
       description: snippet['description'] as String? ?? '',
       thumbnailUrl: YoutubeApiClient._bestThumbnail(snippet['thumbnails']),
+      handle: handle,
+      customUrl: rawHandle,
     );
   }
+}
+
+/// Outcome of [YoutubeApiClient.resolveChannel].
+class YoutubeChannelResolveResult {
+  const YoutubeChannelResolveResult({
+    this.channel,
+    this.needsApiKey = false,
+    this.message = '',
+  });
+
+  final YoutubeChannelMeta? channel;
+  final bool needsApiKey;
+  final String message;
+
+  bool get isSuccess => channel != null && channel!.id.isNotEmpty;
 }
 
 class YoutubePlaylistMeta {

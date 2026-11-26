@@ -8,11 +8,12 @@ import '../../auth/admin_auth_providers.dart';
 import '../../data/catalog_providers.dart';
 import '../../data/models/curated_channel.dart';
 import '../../data/shelf_categorizer.dart';
+import '../../data/youtube/youtube_config.dart';
 import '../../data/youtube/youtube_id_parser.dart';
 import '../../data/youtube/youtube_search_models.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Admin-only: search YouTube channels/playlists and add to curated catalog.
+/// Admin-only: link YouTube channels/playlists into the curated catalog.
 class AdminCatalogScreen extends ConsumerStatefulWidget {
   const AdminCatalogScreen({super.key});
 
@@ -21,15 +22,18 @@ class AdminCatalogScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
-  final _searchCtrl = TextEditingController();
+  final _channelLinkCtrl = TextEditingController();
   final _playlistLinkCtrl = TextEditingController();
+  final _searchCtrl = TextEditingController();
   String? _status;
+  bool _linkingChannel = false;
   bool _linkingPlaylist = false;
 
   @override
   void dispose() {
-    _searchCtrl.dispose();
+    _channelLinkCtrl.dispose();
     _playlistLinkCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
@@ -66,6 +70,77 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
     ref.invalidate(curatedCatalogProvider);
     ref.invalidate(localPlaylistsProvider);
     ref.invalidate(homeCatalogProvider);
+  }
+
+  Future<void> _linkChannelByUrl() async {
+    final l10n = AppLocalizations.of(context);
+    final raw = _channelLinkCtrl.text.trim();
+    final refParsed = YoutubeIdParser.parseChannelRef(raw);
+    if (refParsed == null) {
+      setState(() => _status = l10n.invalidChannelLink);
+      return;
+    }
+
+    setState(() {
+      _linkingChannel = true;
+      _status = null;
+    });
+
+    try {
+      final api = ref.read(youtubeApiClientProvider);
+      final result = await api.resolveChannel(refParsed);
+      if (!mounted) return;
+
+      if (result.needsApiKey) {
+        setState(() => _status = l10n.channelLinkNeedsApiKey);
+        return;
+      }
+      final meta = result.channel;
+      if (meta == null || meta.id.isEmpty) {
+        setState(
+          () => _status = result.message.isNotEmpty
+              ? result.message
+              : l10n.channelLinkError('not found'),
+        );
+        return;
+      }
+
+      final store = ref.read(catalogStoreProvider);
+      final handle = meta.handle.isNotEmpty
+          ? '@${meta.handle}'
+          : (refParsed.kind == YoutubeChannelRefKind.handle
+              ? '@${refParsed.value}'
+              : '');
+      final title = meta.title.isNotEmpty ? meta.title : meta.id;
+      final channel = await store.addChannel(
+        channelId: meta.id,
+        displayName: title,
+        handle: handle,
+        notes: 'Linked from channel URL ${refParsed.displayLabel}',
+        descriptionForHeuristic: meta.description.isNotEmpty
+            ? meta.description
+            : title,
+      );
+
+      ref.invalidate(curatedCatalogProvider);
+      ref.invalidate(localPlaylistsProvider);
+      ref.invalidate(homeCatalogProvider);
+      if (!mounted) return;
+      setState(() {
+        _status = meta.isMock
+            ? l10n.addedChannelMock(channel.displayName)
+            : l10n.addedChannel(
+                channel.displayName,
+                ShelfTypes.localizedTitle(channel.category, l10n),
+              );
+        _channelLinkCtrl.clear();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _status = l10n.channelLinkError('$e'));
+    } finally {
+      if (mounted) setState(() => _linkingChannel = false);
+    }
   }
 
   Future<void> _linkPlaylistByUrlOrId() async {
@@ -156,6 +231,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
     final search = ref.watch(channelSearchProvider);
     final catalog = ref.watch(curatedCatalogProvider);
     final playlists = ref.watch(localPlaylistsProvider);
+    final hasApiKey = YoutubeConfig.hasApiKey;
 
     return Scaffold(
       backgroundColor: MonVlogTheme.communityBg,
@@ -184,7 +260,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            l10n.searchYoutubeChannels,
+            l10n.linkChannelTitle,
             style: GoogleFonts.manrope(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -193,22 +269,26 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            l10n.catalogAdminBlurb,
+            l10n.linkChannelBlurb,
             style: GoogleFonts.manrope(
               color: MonVlogTheme.muted,
               fontSize: 13,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 16),
+          if (!hasApiKey) ...[
+            const SizedBox(height: 12),
+            _MockBanner(message: l10n.youtubeApiKeyMissingBanner),
+          ],
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: TextField(
-                  controller: _searchCtrl,
+                  controller: _channelLinkCtrl,
                   style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
                   decoration: InputDecoration(
-                    hintText: l10n.channelNameHint,
+                    hintText: l10n.channelLinkHint,
                     hintStyle: GoogleFonts.manrope(color: MonVlogTheme.muted),
                     filled: true,
                     fillColor: MonVlogTheme.communitySurface,
@@ -216,14 +296,16 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.search_rounded),
+                    prefixIcon: const Icon(Icons.link_rounded),
                   ),
-                  onSubmitted: (_) => _runSearch(),
+                  onSubmitted: (_) {
+                    if (!_linkingChannel) _linkChannelByUrl();
+                  },
                 ),
               ),
               const SizedBox(width: 10),
               FilledButton(
-                onPressed: _runSearch,
+                onPressed: _linkingChannel ? null : _linkChannelByUrl,
                 style: FilledButton.styleFrom(
                   backgroundColor: MonVlogTheme.brandRed,
                   padding: const EdgeInsets.symmetric(
@@ -231,10 +313,19 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                     vertical: 16,
                   ),
                 ),
-                child: Text(
-                  l10n.search,
-                  style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
-                ),
+                child: _linkingChannel
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.linkChannel,
+                        style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+                      ),
               ),
             ],
           ),
@@ -282,7 +373,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.link_rounded),
+                    prefixIcon: const Icon(Icons.playlist_add_rounded),
                   ),
                   onSubmitted: (_) {
                     if (!_linkingPlaylist) _linkPlaylistByUrlOrId();
@@ -315,7 +406,63 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
+          Text(
+            l10n.searchYoutubeChannelsOptional,
+            style: GoogleFonts.manrope(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: MonVlogTheme.onBg,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.catalogAdminBlurb,
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.muted,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchCtrl,
+                  style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
+                  decoration: InputDecoration(
+                    hintText: l10n.channelNameHint,
+                    hintStyle: GoogleFonts.manrope(color: MonVlogTheme.muted),
+                    filled: true,
+                    fillColor: MonVlogTheme.communitySurface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(Icons.search_rounded),
+                  ),
+                  onSubmitted: (_) => _runSearch(),
+                ),
+              ),
+              const SizedBox(width: 10),
+              FilledButton(
+                onPressed: _runSearch,
+                style: FilledButton.styleFrom(
+                  backgroundColor: MonVlogTheme.brandRed,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                ),
+                child: Text(
+                  l10n.search,
+                  style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           search.when(
             loading: () => const Padding(
               padding: EdgeInsets.all(24),
@@ -470,7 +617,7 @@ class _MockBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: MonVlogTheme.brandRed.withValues(alpha: 0.15),

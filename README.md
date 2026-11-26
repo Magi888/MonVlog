@@ -21,12 +21,12 @@ UI on Android TV / Google TV (Samsung living-room path).
 | **Phone Profile** | Profile tab / `/phone/profile` | Guest account + admin sign-in + **mn/en language switch** (bottom menu always visible) |
 | **TV / Samsung living room** | `/tv` (legacy `/home` alias) | Left rail + focusable shelves; **no** phone bottom bar. On phone viewports `/home` redirects to `/phone` so the bottom menu (Community / Watch / Profile) always shows. |
 | **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login (password + optional biometric unlock) or **Continue as guest** |
-| **Admin catalog** | `/admin/catalog` | Search YouTube channels/playlists + link playlist by URL/ID (admin only) |
+| **Admin catalog** | `/admin/catalog` | Link YouTube channel/playlist by URL (admin only); optional name search |
 | **Channel browse** | `/channel/:channelId` | Open a curated channel — uploads + linked playlists (Netflix shelves) |
 | Splash | `/splash` | Brand splash → entry login |
 
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
-Without `YOUTUBE_API_KEY`, admin channel search shows **mock results** with a clear UI banner.
+Without `YOUTUBE_API_KEY`, admin can still link `/channel/UC…` and playlist IDs (mock metadata); `@handle` / `/c/` / `/user/` need `--dart-define=YOUTUBE_API_KEY=...`. Name search falls back to mock hits with an on-screen banner.
 
 ## Samsung phone + Samsung TV (Android)
 
@@ -117,6 +117,7 @@ flutter run -d chrome \
 - After the first successful password login on a phone, MonVlog offers **passkey / biometric unlock** (`local_auth` + secure storage). Next visits can unlock with fingerprint, face, or device PIN; **password stays as fallback**. Toggle later under **Profile** while signed in as admin. (Local-device unlock — not server WebAuthn.)
 - You can also open Admin from the phone top-right icon, TV **Settings → Admin sign-in**, or `/admin/login`.
 - Only the admin session can open `/admin/catalog` (role gate). Guests browse shelves read-only.
+- **Link channel (primary):** paste a YouTube channel URL (`/@handle`, `/channel/UC…`, `/c/…`) or bare `UC…` id. With `YOUTUBE_API_KEY`, title/handle resolve via `channels.list` (`id` / `forHandle` / `forUsername`); without a key, `/channel/UC…` still saves with mock metadata and the UI shows the dart-define hint.
 - **Link playlist:** paste a YouTube playlist URL (`?list=PL…`) or bare playlist ID on the admin catalog screen. With `YOUTUBE_API_KEY`, title/channel resolve via `playlists.list`; without a key, the ID still saves with mock metadata.
 - **View channel:** Community **View Channel**, admin curated-list tap, or TV **Creators** open `/channel/:channelId` — uploads + any playlists linked to that channel.
 - Added channels/playlists merge into local JSON overrides (`SharedPreferences`) on top of `assets/config/curated_channels.json` (same shape as optional remote `CURATED_CHANNELS_URL`).
@@ -129,7 +130,7 @@ lib/
   app/                 # theme, router, form-factor
   auth/                # admin login, seed email, secure password + local biometric unlock
   features/
-    admin/             # login + catalog search/add + playlist URL link
+    admin/             # login + catalog channel/playlist URL link (+ optional name search)
     channel/           # channel browse (uploads + linked playlists)
     phone/             # Community (Wix-like) + Watch rails + shell
     tv/                # Netflix left-rail shell + billboard

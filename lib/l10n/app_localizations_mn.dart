@@ -206,8 +206,47 @@ class AppLocalizationsMn extends AppLocalizations {
   String get searchYoutubeChannels => 'YouTube суваг хайх';
 
   @override
+  String get searchYoutubeChannelsOptional => 'Нэмэлт: нэрээр хайх';
+
+  @override
   String get catalogAdminBlurb =>
-      'Кураторласан жагсаалтад суваг эсвэл плейлист нэмнэ. Үзэгчид шинэчлэгдсэн тавиурыг засварлахгүйгээр харна.';
+      'Дээрх суваг/плейлист URL-ийг ашиглана уу. Нэрээр хайх нь хоёрдогч (шууд үр дүнд YOUTUBE_API_KEY хэрэгтэй).';
+
+  @override
+  String get linkChannelTitle => 'YouTube суваг холбох';
+
+  @override
+  String get linkChannelBlurb =>
+      'Сувгийн URL (/@handle, /channel/UC…, /c/…) эсвэл UC id буулгана. Түлхүүр тохируулсан үед YouTube API-аар татна.';
+
+  @override
+  String get channelLinkHint =>
+      'https://youtube.com/@handle эсвэл /channel/UC…';
+
+  @override
+  String get linkChannel => 'Холбох';
+
+  @override
+  String get invalidChannelLink =>
+      'Энэ текстээс сувгийн URL эсвэл UC id задлаж чадсангүй.';
+
+  @override
+  String get channelLinkNeedsApiKey =>
+      '@handle /c/ /user/ холбоход YOUTUBE_API_KEY хэрэгтэй. --dart-define=YOUTUBE_API_KEY=... өгөх эсвэл /channel/UC… URL буулгана уу.';
+
+  @override
+  String addedChannelMock(String name) {
+    return '“$name” суваг холбогдлоо (туршилтын мэдээлэл — шууд метадатад YOUTUBE_API_KEY нэмнэ үү)';
+  }
+
+  @override
+  String channelLinkError(String error) {
+    return 'Суваг холболт амжилтгүй: $error';
+  }
+
+  @override
+  String get youtubeApiKeyMissingBanner =>
+      'YOUTUBE_API_KEY байхгүй. /channel/UC… болон плейлист ID-г туршилтын мэдээллээр холбоно. @handle /c/ /user/ болон шууд гарчигт --dart-define=YOUTUBE_API_KEY=YOUR_KEY ашиглана уу.';
 
   @override
   String get linkPlaylistTitle => 'YouTube плейлист холбох';
@@ -275,7 +314,7 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get mockSearchBanner =>
-      'Туршилтын хайлт — YouTube API түлхүүр тохируулаагүй.';
+      'Туршилтын хайлт — YouTube API түлхүүр тохируулаагүй. Дээрх сувгийн URL-аар холбох, эсвэл --dart-define=YOUTUBE_API_KEY=... өгнө үү.';
 
   @override
   String get playlist => 'Плейлист';

@@ -476,11 +476,71 @@ abstract class AppLocalizations {
   /// **'Search YouTube channels'**
   String get searchYoutubeChannels;
 
+  /// No description provided for @searchYoutubeChannelsOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional: search by name'**
+  String get searchYoutubeChannelsOptional;
+
   /// No description provided for @catalogAdminBlurb.
   ///
   /// In en, this message translates to:
-  /// **'Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.'**
+  /// **'Prefer pasting a channel or playlist URL above. Name search is secondary (needs YOUTUBE_API_KEY for live results).'**
   String get catalogAdminBlurb;
+
+  /// No description provided for @linkChannelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a YouTube channel'**
+  String get linkChannelTitle;
+
+  /// No description provided for @linkChannelBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a channel URL (/@handle, /channel/UC…, /c/…) or bare UC id. Resolves via the YouTube API when a key is set.'**
+  String get linkChannelBlurb;
+
+  /// No description provided for @channelLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://youtube.com/@handle or /channel/UC…'**
+  String get channelLinkHint;
+
+  /// No description provided for @linkChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get linkChannel;
+
+  /// No description provided for @invalidChannelLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t parse a channel URL or UC id from that text.'**
+  String get invalidChannelLink;
+
+  /// No description provided for @channelLinkNeedsApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUTUBE_API_KEY required for @handle /c/ /user/ links. Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.'**
+  String get channelLinkNeedsApiKey;
+
+  /// No description provided for @addedChannelMock.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked channel “{name}” (mock details — add YOUTUBE_API_KEY for live metadata)'**
+  String addedChannelMock(String name);
+
+  /// No description provided for @channelLinkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel link failed: {error}'**
+  String channelLinkError(String error);
+
+  /// No description provided for @youtubeApiKeyMissingBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUTUBE_API_KEY missing. /channel/UC… and playlist IDs still link with mock metadata. For @handle /c/ /user/ and live titles, run with --dart-define=YOUTUBE_API_KEY=YOUR_KEY.'**
+  String get youtubeApiKeyMissingBanner;
 
   /// No description provided for @linkPlaylistTitle.
   ///
@@ -587,7 +647,7 @@ abstract class AppLocalizations {
   /// No description provided for @mockSearchBanner.
   ///
   /// In en, this message translates to:
-  /// **'Mock search — YouTube API key not configured.'**
+  /// **'Mock search — YouTube API key not configured. Prefer linking by channel URL above, or pass --dart-define=YOUTUBE_API_KEY=...'**
   String get mockSearchBanner;
 
   /// No description provided for @playlist.
