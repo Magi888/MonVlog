@@ -214,6 +214,44 @@ class YoutubeApiClient {
         .toList();
   }
 
+  /// `playlists.list` — resolve title / channel for a playlist ID (URL link flow).
+  /// When [apiKey] is missing, returns a mock meta so admin can still link IDs.
+  Future<YoutubePlaylistMeta?> getPlaylist(String playlistId) async {
+    final id = playlistId.trim();
+    if (id.isEmpty) return null;
+
+    if (!isConfigured) {
+      return YoutubePlaylistMeta(
+        id: id,
+        title: 'Linked playlist ($id)',
+        channelId: '',
+        channelTitle: '',
+        description: 'Mock playlist meta — pass YOUTUBE_API_KEY for live details.',
+        thumbnailUrl: 'https://picsum.photos/seed/${id.hashCode}/480/270',
+        isMock: true,
+      );
+    }
+
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/playlists',
+        queryParameters: {
+          'part': 'snippet',
+          'id': id,
+          'key': apiKey,
+          'maxResults': 1,
+        },
+      );
+      final items = response.data?['items'] as List<dynamic>? ?? const [];
+      if (items.isEmpty) return null;
+      final raw = items.first;
+      if (raw is! Map) return null;
+      return YoutubePlaylistMeta.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// `playlistItems.list` — recent uploads for a channel's uploads playlist.
   Future<List<VideoItem>> listPlaylistItems({
     required String playlistId,
@@ -426,11 +464,15 @@ class YoutubeChannelMeta {
     required this.id,
     required this.title,
     required this.uploadsPlaylistId,
+    this.description = '',
+    this.thumbnailUrl = '',
   });
 
   final String id;
   final String title;
   final String uploadsPlaylistId;
+  final String description;
+  final String thumbnailUrl;
 
   factory YoutubeChannelMeta.fromJson(Map<String, dynamic> json) {
     final id = json['id'] as String? ?? '';
@@ -447,6 +489,43 @@ class YoutubeChannelMeta {
       id: id,
       title: snippet['title'] as String? ?? '',
       uploadsPlaylistId: related['uploads'] as String? ?? '',
+      description: snippet['description'] as String? ?? '',
+      thumbnailUrl: YoutubeApiClient._bestThumbnail(snippet['thumbnails']),
+    );
+  }
+}
+
+class YoutubePlaylistMeta {
+  const YoutubePlaylistMeta({
+    required this.id,
+    required this.title,
+    required this.channelId,
+    this.channelTitle = '',
+    this.description = '',
+    this.thumbnailUrl = '',
+    this.isMock = false,
+  });
+
+  final String id;
+  final String title;
+  final String channelId;
+  final String channelTitle;
+  final String description;
+  final String thumbnailUrl;
+  final bool isMock;
+
+  factory YoutubePlaylistMeta.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String? ?? '';
+    final snippet = json['snippet'] is Map
+        ? Map<String, dynamic>.from(json['snippet'] as Map)
+        : const <String, dynamic>{};
+    return YoutubePlaylistMeta(
+      id: id,
+      title: snippet['title'] as String? ?? '',
+      channelId: snippet['channelId'] as String? ?? '',
+      channelTitle: snippet['channelTitle'] as String? ?? '',
+      description: snippet['description'] as String? ?? '',
+      thumbnailUrl: YoutubeApiClient._bestThumbnail(snippet['thumbnails']),
     );
   }
 }

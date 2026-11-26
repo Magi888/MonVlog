@@ -35,9 +35,11 @@ final youtubeApiClientProvider = Provider<YoutubeApiClient>((ref) {
 
 final catalogRepositoryProvider = FutureProvider<CatalogRepository>((ref) async {
   final curated = await ref.watch(curatedCatalogProvider.future);
+  final playlists = await ref.watch(localPlaylistsProvider.future);
   return CatalogRepository(
     api: ref.watch(youtubeApiClientProvider),
     curated: curated,
+    playlists: playlists,
     categorizer: ref.watch(shelfCategorizerProvider),
   );
 });
@@ -46,6 +48,15 @@ final homeCatalogProvider = FutureProvider<CatalogSnapshot>((ref) async {
   final repo = await ref.watch(catalogRepositoryProvider.future);
   return repo.loadHomeShelves();
 });
+
+/// Single-channel browse (Community “View Channel” / admin catalog tap).
+final channelCatalogProvider =
+    FutureProvider.autoDispose.family<ChannelCatalogSnapshot, String>(
+  (ref, channelId) async {
+    final repo = await ref.watch(catalogRepositoryProvider.future);
+    return repo.loadChannelCatalog(channelId);
+  },
+);
 
 /// Admin channel/playlist search (live or mock when key missing).
 final channelSearchQueryProvider = StateProvider<String>((ref) => '');

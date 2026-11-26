@@ -142,9 +142,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                 if (_tabs.index == 1) {
                   return _VlogTabContent(
                     onPost: () => _stub(l10n.uploadVideo),
-                    onViewChannel: (name) {
-                      context.go('/phone/watch');
-                      _stub('View Channel: $name');
+                    onViewChannel: (channel) {
+                      context.push(
+                        '/channel/${Uri.encodeComponent(channel.browseId)}',
+                        extra: channel.name,
+                      );
                     },
                   );
                 }
@@ -467,7 +469,7 @@ class _VlogTabContent extends StatelessWidget {
   });
 
   final VoidCallback onPost;
-  final ValueChanged<String> onViewChannel;
+  final ValueChanged<MockVideoChannel> onViewChannel;
 
   @override
   Widget build(BuildContext context) {
@@ -533,7 +535,7 @@ class _VlogTabContent extends StatelessWidget {
                 ),
               ),
               TextButton.icon(
-                onPressed: () => onViewChannel(l10n.manage),
+                onPressed: () => context.go('/phone/watch'),
                 icon: const Icon(Icons.menu_rounded, size: 18),
                 label: Text(l10n.manage),
                 style: TextButton.styleFrom(
@@ -553,7 +555,7 @@ class _VlogTabContent extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 14),
               child: _ChannelCard(
                 channel: channel,
-                onView: () => onViewChannel(channel.name),
+                onView: () => onViewChannel(channel),
               ),
             ),
         ],

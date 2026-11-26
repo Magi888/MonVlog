@@ -237,10 +237,7 @@ class _TvSectionBody extends ConsumerWidget {
       case 0:
         return const _TvHomeRails();
       case 1:
-        return _TvPlaceholder(
-          title: AppLocalizations.of(context).tvNavCreators,
-          subtitle: AppLocalizations.of(context).tvCreatorsSubtitle,
-        );
+        return const _TvCreatorsSection();
       case 2:
         return _TvPlaceholder(
           title: AppLocalizations.of(context).tvNavSearch,
@@ -254,6 +251,156 @@ class _TvSectionBody extends ConsumerWidget {
       default:
         return const _TvSettingsSection();
     }
+  }
+}
+
+class _TvCreatorsSection extends ConsumerWidget {
+  const _TvCreatorsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final catalog = ref.watch(curatedCatalogProvider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(36, 40, 36, 24),
+      child: catalog.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: MonVlogTheme.brandRed),
+        ),
+        error: (e, _) => Text(
+          l10n.catalogError('$e'),
+          style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
+        ),
+        data: (config) {
+          final channels = config.channels.take(40).toList();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.tvNavCreators,
+                style: GoogleFonts.bebasNeue(
+                  color: MonVlogTheme.onBg,
+                  fontSize: 42,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.tvCreatorsSubtitle,
+                style: GoogleFonts.manrope(
+                  color: MonVlogTheme.muted,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: channels.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final c = channels[index];
+                    return _TvCreatorTile(
+                      title: c.displayName,
+                      subtitle:
+                          c.handle.isNotEmpty ? c.handle : c.channelId,
+                      autofocus: index == 0,
+                      onOpen: () => context.push(
+                        '/channel/${Uri.encodeComponent(c.channelId)}',
+                        extra: c.displayName,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TvCreatorTile extends StatefulWidget {
+  const _TvCreatorTile({
+    required this.title,
+    required this.subtitle,
+    required this.onOpen,
+    this.autofocus = false,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onOpen;
+  final bool autofocus;
+
+  @override
+  State<_TvCreatorTile> createState() => _TvCreatorTileState();
+}
+
+class _TvCreatorTileState extends State<_TvCreatorTile> {
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FocusableActionDetector(
+      autofocus: widget.autofocus,
+      onShowFocusHighlight: (focused) => setState(() => _focused = focused),
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.select): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            widget.onOpen();
+            return null;
+          },
+        ),
+      },
+      child: Material(
+        color: _focused ? MonVlogTheme.surface : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: widget.onOpen,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              children: [
+                const Icon(Icons.live_tv_rounded, color: MonVlogTheme.coral),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: GoogleFonts.manrope(
+                          color: MonVlogTheme.onBg,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        widget.subtitle,
+                        style: GoogleFonts.manrope(
+                          color: MonVlogTheme.muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: MonVlogTheme.muted,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

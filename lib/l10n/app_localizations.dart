@@ -482,6 +482,54 @@ abstract class AppLocalizations {
   /// **'Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.'**
   String get catalogAdminBlurb;
 
+  /// No description provided for @linkPlaylistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a YouTube playlist'**
+  String get linkPlaylistTitle;
+
+  /// No description provided for @linkPlaylistBlurb.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a playlist URL or ID (list=PL…). Resolves title/channel via the YouTube API when a key is set.'**
+  String get linkPlaylistBlurb;
+
+  /// No description provided for @playlistLinkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://youtube.com/playlist?list=PL… or PL…'**
+  String get playlistLinkHint;
+
+  /// No description provided for @linkPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get linkPlaylist;
+
+  /// No description provided for @invalidPlaylistLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t parse a playlist ID from that URL or text.'**
+  String get invalidPlaylistLink;
+
+  /// No description provided for @addedPlaylistMock.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked playlist “{title}” (mock details — add YOUTUBE_API_KEY for live metadata)'**
+  String addedPlaylistMock(String title);
+
+  /// No description provided for @playlistLinkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist link failed: {error}'**
+  String playlistLinkError(String error);
+
+  /// No description provided for @channelEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No videos yet for this channel.'**
+  String get channelEmpty;
+
   /// No description provided for @channelNameHint.
   ///
   /// In en, this message translates to:
@@ -635,7 +683,7 @@ abstract class AppLocalizations {
   /// No description provided for @tvCreatorsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Curated Mongolian channels — mock shelf coming soon.'**
+  /// **'Open a curated Mongolian channel to browse uploads and linked playlists.'**
   String get tvCreatorsSubtitle;
 
   /// No description provided for @tvSearchSubtitle.

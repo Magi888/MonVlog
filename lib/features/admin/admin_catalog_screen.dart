@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../app/theme.dart';
 import '../../auth/admin_auth_providers.dart';
 import '../../data/catalog_providers.dart';
+import '../../data/models/curated_channel.dart';
 import '../../data/shelf_categorizer.dart';
+import '../../data/youtube/youtube_id_parser.dart';
 import '../../data/youtube/youtube_search_models.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -20,11 +22,14 @@ class AdminCatalogScreen extends ConsumerStatefulWidget {
 
 class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
   final _searchCtrl = TextEditingController();
+  final _playlistLinkCtrl = TextEditingController();
   String? _status;
+  bool _linkingPlaylist = false;
 
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _playlistLinkCtrl.dispose();
     super.dispose();
   }
 
@@ -61,6 +66,72 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
     ref.invalidate(curatedCatalogProvider);
     ref.invalidate(localPlaylistsProvider);
     ref.invalidate(homeCatalogProvider);
+  }
+
+  Future<void> _linkPlaylistByUrlOrId() async {
+    final l10n = AppLocalizations.of(context);
+    final raw = _playlistLinkCtrl.text.trim();
+    final playlistId = YoutubeIdParser.parsePlaylistId(raw);
+    if (playlistId == null) {
+      setState(() => _status = l10n.invalidPlaylistLink);
+      return;
+    }
+
+    setState(() {
+      _linkingPlaylist = true;
+      _status = null;
+    });
+
+    try {
+      final api = ref.read(youtubeApiClientProvider);
+      final meta = await api.getPlaylist(playlistId);
+      final store = ref.read(catalogStoreProvider);
+      final title = (meta?.title.isNotEmpty == true)
+          ? meta!.title
+          : 'Playlist $playlistId';
+      final channelId = meta?.channelId ?? '';
+      final channelName = meta?.channelTitle ?? '';
+
+      // Ensure the owning channel is on the allowlist when we know its UC id.
+      if (channelId.startsWith('UC')) {
+        await store.addChannel(
+          channelId: channelId,
+          displayName: channelName.isNotEmpty ? channelName : channelId,
+          notes: 'Auto-added from linked playlist $playlistId',
+          descriptionForHeuristic: meta?.description ?? title,
+        );
+      }
+
+      await store.addPlaylist(
+        playlistId: playlistId,
+        title: title,
+        channelId: channelId,
+        channelName: channelName,
+      );
+
+      ref.invalidate(curatedCatalogProvider);
+      ref.invalidate(localPlaylistsProvider);
+      ref.invalidate(homeCatalogProvider);
+      if (!mounted) return;
+      setState(() {
+        _status = meta?.isMock == true
+            ? l10n.addedPlaylistMock(title)
+            : l10n.addedPlaylist(title);
+        _playlistLinkCtrl.clear();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _status = l10n.playlistLinkError('$e'));
+    } finally {
+      if (mounted) setState(() => _linkingPlaylist = false);
+    }
+  }
+
+  void _openChannel(CuratedChannel channel) {
+    context.push(
+      '/channel/${Uri.encodeComponent(channel.channelId)}',
+      extra: channel.displayName,
+    );
   }
 
   Future<void> _logout() async {
@@ -177,6 +248,73 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
               ),
             ),
           ],
+          const SizedBox(height: 28),
+          Text(
+            l10n.linkPlaylistTitle,
+            style: GoogleFonts.manrope(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: MonVlogTheme.onBg,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.linkPlaylistBlurb,
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.muted,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _playlistLinkCtrl,
+                  style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
+                  decoration: InputDecoration(
+                    hintText: l10n.playlistLinkHint,
+                    hintStyle: GoogleFonts.manrope(color: MonVlogTheme.muted),
+                    filled: true,
+                    fillColor: MonVlogTheme.communitySurface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: const Icon(Icons.link_rounded),
+                  ),
+                  onSubmitted: (_) {
+                    if (!_linkingPlaylist) _linkPlaylistByUrlOrId();
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              FilledButton(
+                onPressed: _linkingPlaylist ? null : _linkPlaylistByUrlOrId,
+                style: FilledButton.styleFrom(
+                  backgroundColor: MonVlogTheme.brandRed,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                ),
+                child: _linkingPlaylist
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l10n.linkPlaylist,
+                        style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+                      ),
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
           search.when(
             loading: () => const Padding(
@@ -244,6 +382,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     dense: true,
+                    onTap: () => _openChannel(c),
                     title: Text(
                       c.displayName,
                       style: GoogleFonts.manrope(
@@ -258,6 +397,10 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                         color: MonVlogTheme.muted,
                         fontSize: 12,
                       ),
+                    ),
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: MonVlogTheme.muted.withValues(alpha: 0.8),
                     ),
                   ),
               ],
@@ -283,6 +426,14 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       dense: true,
+                      onTap: p.channelId.isEmpty
+                          ? null
+                          : () => context.push(
+                                '/channel/${Uri.encodeComponent(p.channelId)}',
+                                extra: p.channelName.isNotEmpty
+                                    ? p.channelName
+                                    : p.title,
+                              ),
                       title: Text(
                         p.title,
                         style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
@@ -294,6 +445,12 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                           fontSize: 12,
                         ),
                       ),
+                      trailing: p.channelId.isEmpty
+                          ? null
+                          : Icon(
+                              Icons.chevron_right_rounded,
+                              color: MonVlogTheme.muted.withValues(alpha: 0.8),
+                            ),
                     ),
                 ],
               );

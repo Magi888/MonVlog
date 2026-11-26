@@ -210,6 +210,36 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.';
 
   @override
+  String get linkPlaylistTitle => 'Link a YouTube playlist';
+
+  @override
+  String get linkPlaylistBlurb =>
+      'Paste a playlist URL or ID (list=PL…). Resolves title/channel via the YouTube API when a key is set.';
+
+  @override
+  String get playlistLinkHint => 'https://youtube.com/playlist?list=PL… or PL…';
+
+  @override
+  String get linkPlaylist => 'Link';
+
+  @override
+  String get invalidPlaylistLink =>
+      'Couldn’t parse a playlist ID from that URL or text.';
+
+  @override
+  String addedPlaylistMock(String title) {
+    return 'Linked playlist “$title” (mock details — add YOUTUBE_API_KEY for live metadata)';
+  }
+
+  @override
+  String playlistLinkError(String error) {
+    return 'Playlist link failed: $error';
+  }
+
+  @override
+  String get channelEmpty => 'No videos yet for this channel.';
+
+  @override
   String get channelNameHint => 'Channel name…';
 
   @override
@@ -297,7 +327,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tvCreatorsSubtitle =>
-      'Curated Mongolian channels — mock shelf coming soon.';
+      'Open a curated Mongolian channel to browse uploads and linked playlists.';
 
   @override
   String get tvSearchSubtitle =>
