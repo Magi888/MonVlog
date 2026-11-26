@@ -342,4 +342,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authInvalidCredentials => 'Invalid email or password.';
+
+  @override
+  String get unlockWithPasskey => 'Unlock with passkey / biometric';
+
+  @override
+  String get usePasswordInstead => 'Use password instead';
+
+  @override
+  String get passkeyOfferTitle => 'Use passkey next time?';
+
+  @override
+  String get passkeyOfferBody =>
+      'After this sign-in, unlock admin with fingerprint, face, or your device PIN. Password stays available as a fallback.';
+
+  @override
+  String get passkeyOfferEnable => 'Enable';
+
+  @override
+  String get passkeyOfferNotNow => 'Not now';
+
+  @override
+  String get passkeyPromptEnable =>
+      'Confirm it’s you to enable admin passkey unlock';
+
+  @override
+  String get passkeyPromptUnlock => 'Unlock MonVlog admin';
+
+  @override
+  String get passkeyEnabledSnack => 'Passkey / biometric unlock enabled';
+
+  @override
+  String get authBiometricNotEnabled =>
+      'Passkey unlock is not enabled yet — sign in with password first.';
+
+  @override
+  String get authBiometricUnavailable =>
+      'This device can’t use biometric unlock. Use password.';
+
+  @override
+  String get authBiometricFailed =>
+      'Biometric unlock canceled or failed. Try password.';
+
+  @override
+  String get authBiometricNotAdmin =>
+      'Sign in with password before enabling passkey unlock.';
+
+  @override
+  String get biometricUnlockToggle => 'Passkey / biometric unlock';
+
+  @override
+  String get biometricUnlockSubtitle =>
+      'Unlock admin after logout with fingerprint, face, or device PIN';
 }

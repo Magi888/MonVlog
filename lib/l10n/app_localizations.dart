@@ -709,6 +709,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid email or password.'**
   String get authInvalidCredentials;
+
+  /// No description provided for @unlockWithPasskey.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with passkey / biometric'**
+  String get unlockWithPasskey;
+
+  /// No description provided for @usePasswordInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use password instead'**
+  String get usePasswordInstead;
+
+  /// No description provided for @passkeyOfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use passkey next time?'**
+  String get passkeyOfferTitle;
+
+  /// No description provided for @passkeyOfferBody.
+  ///
+  /// In en, this message translates to:
+  /// **'After this sign-in, unlock admin with fingerprint, face, or your device PIN. Password stays available as a fallback.'**
+  String get passkeyOfferBody;
+
+  /// No description provided for @passkeyOfferEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable'**
+  String get passkeyOfferEnable;
+
+  /// No description provided for @passkeyOfferNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get passkeyOfferNotNow;
+
+  /// No description provided for @passkeyPromptEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm it’s you to enable admin passkey unlock'**
+  String get passkeyPromptEnable;
+
+  /// No description provided for @passkeyPromptUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock MonVlog admin'**
+  String get passkeyPromptUnlock;
+
+  /// No description provided for @passkeyEnabledSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey / biometric unlock enabled'**
+  String get passkeyEnabledSnack;
+
+  /// No description provided for @authBiometricNotEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey unlock is not enabled yet — sign in with password first.'**
+  String get authBiometricNotEnabled;
+
+  /// No description provided for @authBiometricUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This device can’t use biometric unlock. Use password.'**
+  String get authBiometricUnavailable;
+
+  /// No description provided for @authBiometricFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric unlock canceled or failed. Try password.'**
+  String get authBiometricFailed;
+
+  /// No description provided for @authBiometricNotAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with password before enabling passkey unlock.'**
+  String get authBiometricNotAdmin;
+
+  /// No description provided for @biometricUnlockToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Passkey / biometric unlock'**
+  String get biometricUnlockToggle;
+
+  /// No description provided for @biometricUnlockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock admin after logout with fingerprint, face, or device PIN'**
+  String get biometricUnlockSubtitle;
 }
 
 class _AppLocalizationsDelegate

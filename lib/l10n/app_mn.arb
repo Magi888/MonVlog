@@ -101,5 +101,20 @@
   "playSnack": "“{title}” тоглуулах — апп доторх тоглуулагч M3-д ирнэ",
   "authOnlySeededAdmin": "Зөвхөн тохируулсан админ бүртгэлээр нэвтэрч болно.",
   "authPasswordRequired": "Нууц үг шаардлагатай.",
-  "authInvalidCredentials": "Имэйл эсвэл нууц үг буруу."
+  "authInvalidCredentials": "Имэйл эсвэл нууц үг буруу.",
+  "unlockWithPasskey": "Passkey / биометрээр нээх",
+  "usePasswordInstead": "Нууц үгээр нэвтрэх",
+  "passkeyOfferTitle": "Дараагийн удаа passkey ашиглах уу?",
+  "passkeyOfferBody": "Энэ нэвтрэлтийн дараа админыг хурууны хээ, нүүр эсвэл төхөөрөмжийн PIN-ээр нээнэ. Нууц үг нөөцөд үлдэнэ.",
+  "passkeyOfferEnable": "Идэвхжүүлэх",
+  "passkeyOfferNotNow": "Одоо биш",
+  "passkeyPromptEnable": "Админ passkey идэвхжүүлэхийн тулд баталгаажуулна уу",
+  "passkeyPromptUnlock": "MonVlog админыг нээх",
+  "passkeyEnabledSnack": "Passkey / биометрик нэвтрэлт идэвхжлээ",
+  "authBiometricNotEnabled": "Passkey нэвтрэлт хараахан идэвхжээгүй — эхлээд нууц үгээр нэвтэрнэ үү.",
+  "authBiometricUnavailable": "Энэ төхөөрөмж биометрик нэвтрэлтийг дэмжихгүй. Нууц үг ашиглана уу.",
+  "authBiometricFailed": "Биометрик цуцлагдсан эсвэл амжилтгүй. Нууц үгээр оролдоно уу.",
+  "authBiometricNotAdmin": "Passkey идэвхжүүлэхийн өмнө нууц үгээр нэвтэрнэ үү.",
+  "biometricUnlockToggle": "Passkey / биометрик нэвтрэлт",
+  "biometricUnlockSubtitle": "Гарсны дараа админыг хурууны хээ, нүүр эсвэл PIN-ээр нээх"
 }

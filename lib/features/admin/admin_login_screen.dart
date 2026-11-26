@@ -14,9 +14,9 @@ import '../phone/widgets/monvlog_logo_mark.dart';
 
 /// Branded MonVlog entry / admin login.
 ///
-/// Admin (`maag888@gmail.com` + `ADMIN_PASSWORD` dart-define) → catalog.
+/// Admin (`maag888@gmail.com` + password) → catalog.
+/// After one password login, optional local passkey / biometric unlock.
 /// Everyone else can **Continue as guest** into the phone shell (read-only).
-/// Language switch is available here for guests before entering the app.
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
 
@@ -32,6 +32,16 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
   var _busy = false;
   var _obscure = true;
   String? _errorCode;
+
+  /// Device can unlock and admin previously opted in.
+  var _biometricReady = false;
+
+  /// Prefer the biometric button when ready; user can fall back to password.
+  var _preferBiometric = true;
+
+  /// Suppresses the “already admin → catalog” redirect while the post-login
+  /// passkey offer dialog is open.
+  var _suppressAdminRedirect = false;
 
   late final AnimationController _motion;
   late final Animation<double> _fade;
@@ -50,6 +60,17 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _motion, curve: Curves.easeOutCubic));
     _motion.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshBiometricState());
+  }
+
+  Future<void> _refreshBiometricState() async {
+    final auth = ref.read(adminAuthServiceProvider);
+    final ready = await auth.canBiometricUnlock;
+    if (!mounted) return;
+    setState(() {
+      _biometricReady = ready;
+      if (ready) _preferBiometric = true;
+    });
   }
 
   @override
@@ -77,15 +98,113 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
         return l10n.authPasswordRequired;
       case AdminAuthResult.invalidCredentials:
         return l10n.authInvalidCredentials;
+      case AdminAuthResult.biometricNotEnabled:
+        return l10n.authBiometricNotEnabled;
+      case AdminAuthResult.biometricUnavailable:
+        return l10n.authBiometricUnavailable;
+      case AdminAuthResult.biometricFailed:
+        return l10n.authBiometricFailed;
+      case AdminAuthResult.biometricNotAdmin:
+        return l10n.authBiometricNotAdmin;
       default:
         return code ?? '';
     }
   }
 
-  Future<void> _submit() async {
+  Future<void> _goCatalogAfterLogin({required bool offerPasskey}) async {
+    if (!mounted) return;
+    _suppressAdminRedirect = true;
+    try {
+      if (offerPasskey) {
+        final offered = await _maybeOfferPasskey();
+        if (!mounted) return;
+        if (offered && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).passkeyEnabledSnack),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+      if (!mounted) return;
+      context.go('/admin/catalog');
+    } finally {
+      _suppressAdminRedirect = false;
+    }
+  }
+
+  /// Returns true when the user enabled biometric unlock.
+  Future<bool> _maybeOfferPasskey() async {
+    final auth = ref.read(adminAuthServiceProvider);
+    if (await auth.isBiometricUnlockEnabled) return false;
+    if (!await auth.canUseDeviceUnlock) return false;
+    if (!mounted) return false;
+
+    final l10n = AppLocalizations.of(context);
+    final choice = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: MonVlogTheme.communitySurface,
+          title: Text(
+            l10n.passkeyOfferTitle,
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.onBg,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          content: Text(
+            l10n.passkeyOfferBody,
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.muted,
+              height: 1.45,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                l10n.passkeyOfferNotNow,
+                style: GoogleFonts.manrope(color: MonVlogTheme.muted),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: MonVlogTheme.brandRed,
+              ),
+              child: Text(
+                l10n.passkeyOfferEnable,
+                style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (choice != true || !mounted) return false;
+
+    final result = await ref.read(adminSessionProvider.notifier).enableBiometricUnlock(
+          localizedReason: l10n.passkeyPromptEnable,
+        );
+    if (!mounted) return false;
+    if (!result.success) {
+      setState(() => _errorCode = result.message);
+      return false;
+    }
+    await _refreshBiometricState();
+    return true;
+  }
+
+  Future<void> _submitPassword() async {
     setState(() {
       _errorCode = null;
       _busy = true;
+      // Hold catalog redirect until the passkey offer finishes.
+      _suppressAdminRedirect = true;
     });
     final result = await ref.read(adminSessionProvider.notifier).login(
           email: _emailCtrl.text,
@@ -94,9 +213,36 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
     if (!mounted) return;
     setState(() => _busy = false);
     if (result.success) {
-      context.go('/admin/catalog');
+      await _goCatalogAfterLogin(offerPasskey: true);
     } else {
-      setState(() => _errorCode = result.message);
+      setState(() {
+        _errorCode = result.message;
+        _suppressAdminRedirect = false;
+      });
+    }
+  }
+
+  Future<void> _submitBiometric() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _errorCode = null;
+      _busy = true;
+      _suppressAdminRedirect = true;
+    });
+    final result = await ref.read(adminSessionProvider.notifier).unlockWithBiometric(
+          localizedReason: l10n.passkeyPromptUnlock,
+        );
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (result.success) {
+      await _goCatalogAfterLogin(offerPasskey: false);
+    } else {
+      setState(() {
+        _errorCode = result.message;
+        // Soft-fail into password form so the user is never stuck.
+        _preferBiometric = false;
+        _suppressAdminRedirect = false;
+      });
     }
   }
 
@@ -104,13 +250,16 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final session = ref.watch(adminSessionProvider);
-    if (session.valueOrNull?.isAdmin == true) {
+    if (!_suppressAdminRedirect && session.valueOrNull?.isAdmin == true) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/admin/catalog');
+        if (mounted && !_suppressAdminRedirect) {
+          context.go('/admin/catalog');
+        }
       });
     }
 
     final canPop = context.canPop();
+    final showBiometricPrimary = _biometricReady && _preferBiometric;
 
     return Scaffold(
       body: DecoratedBox(
@@ -215,116 +364,204 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                 ),
                               ),
                               const SizedBox(height: 32),
-                              TextFormField(
-                                controller: _emailCtrl,
-                                keyboardType: TextInputType.emailAddress,
-                                autofillHints: const [AutofillHints.email],
-                                textInputAction: TextInputAction.next,
-                                style: GoogleFonts.manrope(
-                                  color: MonVlogTheme.onBg,
-                                ),
-                                decoration: _decoration(
-                                  label: l10n.email,
-                                  icon: Icons.mail_outline_rounded,
-                                ),
-                                validator: (v) {
-                                  if (v == null || v.trim().isEmpty) {
-                                    return l10n.emailRequired;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 14),
-                              TextFormField(
-                                controller: _passwordCtrl,
-                                obscureText: _obscure,
-                                autofillHints: const [AutofillHints.password],
-                                textInputAction: TextInputAction.done,
-                                style: GoogleFonts.manrope(
-                                  color: MonVlogTheme.onBg,
-                                ),
-                                decoration: _decoration(
-                                  label: l10n.password,
-                                  icon: Icons.lock_outline_rounded,
-                                ).copyWith(
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscure
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                      color: MonVlogTheme.muted,
+                              if (showBiometricPrimary) ...[
+                                FilledButton.icon(
+                                  onPressed: _busy ? null : _submitBiometric,
+                                  icon: const Icon(Icons.fingerprint_rounded),
+                                  label: _busy
+                                      ? const SizedBox(
+                                          height: 22,
+                                          width: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          l10n.unlockWithPasskey,
+                                          style: GoogleFonts.manrope(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 16,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: MonVlogTheme.brandRed,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: MonVlogTheme
+                                        .brandRed
+                                        .withValues(alpha: 0.45),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
                                     ),
-                                    onPressed: () =>
-                                        setState(() => _obscure = !_obscure),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
                                 ),
-                                onFieldSubmitted: (_) {
-                                  if (_formKey.currentState?.validate() ??
-                                      false) {
-                                    _submit();
-                                  }
-                                },
-                                validator: (v) {
-                                  if (v == null || v.isEmpty) {
-                                    return l10n.passwordRequired;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              if (_errorCode != null) ...[
+                                if (_errorCode != null) ...[
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _localizeError(l10n, _errorCode),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(
+                                      color: MonVlogTheme.coral,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 12),
-                                Text(
-                                  _localizeError(l10n, _errorCode),
-                                  textAlign: TextAlign.center,
+                                TextButton(
+                                  onPressed: _busy
+                                      ? null
+                                      : () => setState(() {
+                                            _preferBiometric = false;
+                                            _errorCode = null;
+                                          }),
+                                  child: Text(
+                                    l10n.usePasswordInstead,
+                                    style: GoogleFonts.manrope(
+                                      color: MonVlogTheme.onBg,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ] else ...[
+                                TextFormField(
+                                  controller: _emailCtrl,
+                                  keyboardType: TextInputType.emailAddress,
+                                  autofillHints: const [AutofillHints.email],
+                                  textInputAction: TextInputAction.next,
                                   style: GoogleFonts.manrope(
-                                    color: MonVlogTheme.coral,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
+                                    color: MonVlogTheme.onBg,
                                   ),
+                                  decoration: _decoration(
+                                    label: l10n.email,
+                                    icon: Icons.mail_outline_rounded,
+                                  ),
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty) {
+                                      return l10n.emailRequired;
+                                    }
+                                    return null;
+                                  },
                                 ),
-                              ],
-                              const SizedBox(height: 24),
-                              FilledButton(
-                                onPressed: _busy
-                                    ? null
-                                    : () {
-                                        if (_formKey.currentState
-                                                ?.validate() ??
-                                            false) {
-                                          _submit();
-                                        }
-                                      },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: MonVlogTheme.brandRed,
-                                  foregroundColor: Colors.white,
-                                  disabledBackgroundColor: MonVlogTheme
-                                      .brandRed
-                                      .withValues(alpha: 0.45),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
+                                const SizedBox(height: 14),
+                                TextFormField(
+                                  controller: _passwordCtrl,
+                                  obscureText: _obscure,
+                                  autofillHints: const [AutofillHints.password],
+                                  textInputAction: TextInputAction.done,
+                                  style: GoogleFonts.manrope(
+                                    color: MonVlogTheme.onBg,
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: _busy
-                                    ? const SizedBox(
-                                        height: 22,
-                                        width: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        l10n.login,
-                                        style: GoogleFonts.manrope(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                          letterSpacing: 0.3,
-                                        ),
+                                  decoration: _decoration(
+                                    label: l10n.password,
+                                    icon: Icons.lock_outline_rounded,
+                                  ).copyWith(
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscure
+                                            ? Icons.visibility_outlined
+                                            : Icons.visibility_off_outlined,
+                                        color: MonVlogTheme.muted,
                                       ),
-                              ),
+                                      onPressed: () =>
+                                          setState(() => _obscure = !_obscure),
+                                    ),
+                                  ),
+                                  onFieldSubmitted: (_) {
+                                    if (_formKey.currentState?.validate() ??
+                                        false) {
+                                      _submitPassword();
+                                    }
+                                  },
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) {
+                                      return l10n.passwordRequired;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                if (_errorCode != null) ...[
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _localizeError(l10n, _errorCode),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(
+                                      color: MonVlogTheme.coral,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
+                                FilledButton(
+                                  onPressed: _busy
+                                      ? null
+                                      : () {
+                                          if (_formKey.currentState
+                                                  ?.validate() ??
+                                              false) {
+                                            _submitPassword();
+                                          }
+                                        },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: MonVlogTheme.brandRed,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: MonVlogTheme
+                                        .brandRed
+                                        .withValues(alpha: 0.45),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: _busy
+                                      ? const SizedBox(
+                                          height: 22,
+                                          width: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          l10n.login,
+                                          style: GoogleFonts.manrope(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 16,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                ),
+                                if (_biometricReady) ...[
+                                  const SizedBox(height: 8),
+                                  TextButton.icon(
+                                    onPressed: _busy
+                                        ? null
+                                        : () => setState(
+                                              () => _preferBiometric = true,
+                                            ),
+                                    icon: const Icon(
+                                      Icons.fingerprint_rounded,
+                                      size: 20,
+                                    ),
+                                    label: Text(
+                                      l10n.unlockWithPasskey,
+                                      style: GoogleFonts.manrope(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: MonVlogTheme.onBg,
+                                    ),
+                                  ),
+                                ],
+                              ],
                               const SizedBox(height: 12),
                               OutlinedButton(
                                 onPressed: _busy ? null : _continueAsGuest,

@@ -1,9 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'admin_auth_service.dart';
+import 'admin_biometric_gate.dart';
+
+final adminBiometricGateProvider = Provider<AdminBiometricGate>((ref) {
+  return LocalAuthBiometricGate();
+});
 
 final adminAuthServiceProvider = Provider<AdminAuthService>((ref) {
-  return AdminAuthService();
+  return AdminAuthService(
+    biometricGate: ref.watch(adminBiometricGateProvider),
+  );
 });
 
 final adminSessionProvider =
@@ -38,6 +45,25 @@ class AdminSessionController extends StateNotifier<AsyncValue<AdminSession>> {
     }
     return result;
   }
+
+  Future<AdminAuthResult> unlockWithBiometric({
+    required String localizedReason,
+  }) async {
+    final result =
+        await _auth.unlockWithBiometric(localizedReason: localizedReason);
+    if (result.success && result.session != null) {
+      state = AsyncValue.data(result.session!);
+    }
+    return result;
+  }
+
+  Future<AdminAuthResult> enableBiometricUnlock({
+    required String localizedReason,
+  }) async {
+    return _auth.enableBiometricUnlock(localizedReason: localizedReason);
+  }
+
+  Future<void> disableBiometricUnlock() => _auth.disableBiometricUnlock();
 
   Future<void> logout() async {
     await _auth.logout();
