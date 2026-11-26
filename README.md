@@ -58,7 +58,7 @@ adb install build/app/outputs/flutter-apk/app-release.apk
 
 ## Requirements
 
-- Flutter **stable** (3.50+ / Dart 3.14+) — required by `youtube_player_flutter` 11
+- Flutter **stable** (3.41+ / Dart 3.11+) — `youtube_player_flutter` 10.0.1 (iframe). Upgrade to 11 / Dart 3.14+ later when ready.
 - Chrome (fast phone + TV viewport demos) or Android emulator / iOS simulator
 - Optional: Android TV emulator for leanback (`/tv`)
 - Optional: YouTube Data API key for live shelves (not required)

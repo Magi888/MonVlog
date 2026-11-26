@@ -41,8 +41,9 @@ class _YoutubePlayerScreenState extends State<YoutubePlayerScreen> {
           showFullscreenButton: true,
           playsInline: true,
           strictRelatedVideos: true,
-          // Explicit client identity avoids YouTube embed error 153 on release.
-          appId: 'com.monvlog.monvlog',
+          // Client identity via origin (iframe stack); avoids embed error 153.
+          // youtube_player_flutter 11's appId is unavailable on the 10.0.1 pin.
+          origin: 'https://com.monvlog.monvlog',
           interfaceLanguage: 'mn',
           captionLanguage: 'mn',
         ),
@@ -159,8 +160,6 @@ class _YoutubePlayerScreenState extends State<YoutubePlayerScreen> {
                             controller: controller,
                             aspectRatio: 16 / 9,
                             backgroundColor: Colors.black,
-                            // Dedicated player route — start immediately.
-                            autoPlayWhenVisible: false,
                           ),
                   ),
                 ),

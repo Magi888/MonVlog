@@ -4,8 +4,9 @@ publish_to: 'none'
 version: 1.0.2+4
 
 environment:
-  # youtube_player_flutter 11 / youtube_player require Dart 3.14+ (Flutter 3.50+).
-  sdk: ^3.14.0
+  # Match Flutter 3.41.x / Dart 3.11.x (current user stable). Avoid ^3.14 /
+  # youtube_player_flutter 11 until the toolchain upgrades.
+  sdk: '>=3.11.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -40,7 +41,9 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   crypto: ^3.0.8
   local_auth: ^3.0.2
-  youtube_player_flutter: ^11.0.0
+  # Pin <10.0.2: 10.0.2+ pulls material_ui (^3.13) / 11.x needs Dart 3.14+.
+  # 10.0.1 uses youtube_player_iframe (same fromVideoId / YoutubePlayerParams API).
+  youtube_player_flutter: 10.0.1
 
 dev_dependencies:
   flutter_test:
