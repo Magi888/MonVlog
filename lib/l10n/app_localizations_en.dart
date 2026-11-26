@@ -217,21 +217,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get linkChannelBlurb =>
-      'Paste a channel URL (/@handle, /channel/UC…, /c/…) or bare UC id. Resolves via the YouTube API when a key is set.';
+      'Paste a common YouTube channel link (/@handle, /channel/UC…, /c/…, /user/…, youtube.com/vanity) or bare UC id. Share junk (?si=) is ignored. Prefer YOUTUBE_API_KEY for live resolve.';
 
   @override
-  String get channelLinkHint => 'https://youtube.com/@handle or /channel/UC…';
+  String get channelLinkHint => 'youtube.com/@handle, /channel/UC…, or vanity';
 
   @override
   String get linkChannel => 'Link';
 
   @override
   String get invalidChannelLink =>
-      'Couldn’t parse a channel URL or UC id from that text.';
+      'Couldn’t parse a channel URL or UC id from that text. Try youtube.com/@handle, /channel/UC…, /c/…, or a vanity path.';
 
   @override
   String get channelLinkNeedsApiKey =>
-      'YOUTUBE_API_KEY required for @handle /c/ /user/ links. Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.';
+      'This @handle / vanity /c/ /user/ link needs YOUTUBE_API_KEY (recommended: --dart-define=YOUTUBE_API_KEY=...). Or open the channel on YouTube → Share / About and paste the /channel/UC… id instead.';
 
   @override
   String addedChannelMock(String name) {
@@ -245,7 +245,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get youtubeApiKeyMissingBanner =>
-      'YOUTUBE_API_KEY missing. /channel/UC… and playlist IDs still link with mock metadata. For @handle /c/ /user/ and live titles, run with --dart-define=YOUTUBE_API_KEY=YOUR_KEY.';
+      'YOUTUBE_API_KEY missing. Paste /channel/UC… (or bare UC id) to link now with mock metadata. For @handle / vanity /c/ /user/, set --dart-define=YOUTUBE_API_KEY=YOUR_KEY (recommended) — or copy the UC id from YouTube Share/About.';
 
   @override
   String get linkPlaylistTitle => 'Link a YouTube playlist';

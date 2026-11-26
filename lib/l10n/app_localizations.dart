@@ -497,13 +497,13 @@ abstract class AppLocalizations {
   /// No description provided for @linkChannelBlurb.
   ///
   /// In en, this message translates to:
-  /// **'Paste a channel URL (/@handle, /channel/UC…, /c/…) or bare UC id. Resolves via the YouTube API when a key is set.'**
+  /// **'Paste a common YouTube channel link (/@handle, /channel/UC…, /c/…, /user/…, youtube.com/vanity) or bare UC id. Share junk (?si=) is ignored. Prefer YOUTUBE_API_KEY for live resolve.'**
   String get linkChannelBlurb;
 
   /// No description provided for @channelLinkHint.
   ///
   /// In en, this message translates to:
-  /// **'https://youtube.com/@handle or /channel/UC…'**
+  /// **'youtube.com/@handle, /channel/UC…, or vanity'**
   String get channelLinkHint;
 
   /// No description provided for @linkChannel.
@@ -515,13 +515,13 @@ abstract class AppLocalizations {
   /// No description provided for @invalidChannelLink.
   ///
   /// In en, this message translates to:
-  /// **'Couldn’t parse a channel URL or UC id from that text.'**
+  /// **'Couldn’t parse a channel URL or UC id from that text. Try youtube.com/@handle, /channel/UC…, /c/…, or a vanity path.'**
   String get invalidChannelLink;
 
   /// No description provided for @channelLinkNeedsApiKey.
   ///
   /// In en, this message translates to:
-  /// **'YOUTUBE_API_KEY required for @handle /c/ /user/ links. Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.'**
+  /// **'This @handle / vanity /c/ /user/ link needs YOUTUBE_API_KEY (recommended: --dart-define=YOUTUBE_API_KEY=...). Or open the channel on YouTube → Share / About and paste the /channel/UC… id instead.'**
   String get channelLinkNeedsApiKey;
 
   /// No description provided for @addedChannelMock.
@@ -539,7 +539,7 @@ abstract class AppLocalizations {
   /// No description provided for @youtubeApiKeyMissingBanner.
   ///
   /// In en, this message translates to:
-  /// **'YOUTUBE_API_KEY missing. /channel/UC… and playlist IDs still link with mock metadata. For @handle /c/ /user/ and live titles, run with --dart-define=YOUTUBE_API_KEY=YOUR_KEY.'**
+  /// **'YOUTUBE_API_KEY missing. Paste /channel/UC… (or bare UC id) to link now with mock metadata. For @handle / vanity /c/ /user/, set --dart-define=YOUTUBE_API_KEY=YOUR_KEY (recommended) — or copy the UC id from YouTube Share/About.'**
   String get youtubeApiKeyMissingBanner;
 
   /// No description provided for @linkPlaylistTitle.

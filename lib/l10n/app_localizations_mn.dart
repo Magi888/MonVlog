@@ -217,22 +217,22 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get linkChannelBlurb =>
-      'Сувгийн URL (/@handle, /channel/UC…, /c/…) эсвэл UC id буулгана. Түлхүүр тохируулсан үед YouTube API-аар татна.';
+      'Түгээмэл YouTube сувгийн холбоос (/@handle, /channel/UC…, /c/…, /user/…, youtube.com/vanity) эсвэл UC id буулгана. Хуваалцах ?si= гэх мэтийг үл тоомсорлоно. Шууд татахад YOUTUBE_API_KEY илүү найдвартай.';
 
   @override
   String get channelLinkHint =>
-      'https://youtube.com/@handle эсвэл /channel/UC…';
+      'youtube.com/@handle, /channel/UC…, эсвэл vanity';
 
   @override
   String get linkChannel => 'Холбох';
 
   @override
   String get invalidChannelLink =>
-      'Энэ текстээс сувгийн URL эсвэл UC id задлаж чадсангүй.';
+      'Энэ текстээс сувгийн URL эсвэл UC id задлаж чадсангүй. youtube.com/@handle, /channel/UC…, /c/…, эсвэл vanity замыг туршина уу.';
 
   @override
   String get channelLinkNeedsApiKey =>
-      '@handle /c/ /user/ холбоход YOUTUBE_API_KEY хэрэгтэй. --dart-define=YOUTUBE_API_KEY=... өгөх эсвэл /channel/UC… URL буулгана уу.';
+      'Энэ @handle / vanity /c/ /user/ холбоост YOUTUBE_API_KEY хэрэгтэй (зөвлөмж: --dart-define=YOUTUBE_API_KEY=...). Эсвэл YouTube дээр сувгийг нээж → Хуваалцах / Тухай хэсгээс /channel/UC… id-г хуулж буулгана уу.';
 
   @override
   String addedChannelMock(String name) {
@@ -246,7 +246,7 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get youtubeApiKeyMissingBanner =>
-      'YOUTUBE_API_KEY байхгүй. /channel/UC… болон плейлист ID-г туршилтын мэдээллээр холбоно. @handle /c/ /user/ болон шууд гарчигт --dart-define=YOUTUBE_API_KEY=YOUR_KEY ашиглана уу.';
+      'YOUTUBE_API_KEY байхгүй. Одоо /channel/UC… (эсвэл UC id) буулгавал туршилтын мэдээллээр холбогдоно. @handle / vanity /c/ /user/-д --dart-define=YOUTUBE_API_KEY=YOUR_KEY тохируулна уу (зөвлөмж) — эсвэл YouTube-ийн Хуваалцах/Тухайгаас UC id хуулна уу.';
 
   @override
   String get linkPlaylistTitle => 'YouTube плейлист холбох';
