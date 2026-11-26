@@ -89,8 +89,9 @@ void main() {
       expect(AdminConfig.isAdminEmail('viewer@example.com'), isFalse);
     });
 
-    test('password define defaults empty (never committed)', () {
-      expect(AdminConfig.passwordFromDefine, isEmpty);
+    test('password has private-app default (dart-define can override)', () {
+      expect(AdminConfig.passwordFromDefine, isNotEmpty);
+      expect(AdminConfig.hasPasswordDefine, isTrue);
     });
   });
 

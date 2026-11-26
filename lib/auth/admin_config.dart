@@ -1,27 +1,30 @@
-/// Compile-time admin bootstrap via `--dart-define`.
+/// Compile-time admin bootstrap via `--dart-define` (optional override).
 ///
-/// Seed identity is fixed. Password must never be committed — pass it only at
-/// run/build time:
+/// Seed identity is fixed. Builds ship with a private-app default password so
+/// local release APKs work without remembering `--dart-define`. Override at
+/// run/build time when needed:
 ///
 /// ```sh
 /// flutter run \
-///   --dart-define=ADMIN_PASSWORD=your-secret \
+///   --dart-define=ADMIN_PASSWORD=your-override \
 ///   --dart-define=YOUTUBE_API_KEY=optional
 /// ```
 ///
-/// On first launch the password is hashed into flutter_secure_storage so later
-/// runs can authenticate without re-supplying the define (until storage is
-/// cleared).
+/// On launch the effective password is hashed into flutter_secure_storage so
+/// login can verify against the stored hash (updated when the compile-time
+/// value changes).
 class AdminConfig {
   AdminConfig._();
 
   /// Seeded admin email (public identity; not a secret).
   static const String seedEmail = 'maag888@gmail.com';
 
-  /// Password from `--dart-define=ADMIN_PASSWORD=...` only. Never commit a value.
+  /// Effective admin password: `--dart-define=ADMIN_PASSWORD=...` when set,
+  /// otherwise the private-app default so release builds authenticate without
+  /// an extra define.
   static const String passwordFromDefine = String.fromEnvironment(
     'ADMIN_PASSWORD',
-    defaultValue: '',
+    defaultValue: 'Poloiw247',
   );
 
   static bool get hasPasswordDefine => passwordFromDefine.trim().isNotEmpty;

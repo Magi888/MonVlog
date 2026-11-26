@@ -63,13 +63,13 @@ void main() {
     expect(find.text('Login'), findsOneWidget);
     expect(find.text('Continue as guest'), findsOneWidget);
     expect(find.text(AdminConfig.seedEmail), findsOneWidget);
-    expect(find.textContaining('never commit'), findsOneWidget);
+    expect(find.textContaining('seeded admin'), findsOneWidget);
 
     // Password field starts empty — never prefilled from source.
     final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();
     expect(fields.length, greaterThanOrEqualTo(2));
     expect(fields[1].controller?.text ?? '', isEmpty);
-    expect(AdminConfig.passwordFromDefine, isEmpty);
+    expect(AdminConfig.passwordFromDefine, isNotEmpty);
   });
 
   testWidgets('guest continue on phone viewport goes to /phone', (tester) async {

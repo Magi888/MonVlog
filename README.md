@@ -93,21 +93,20 @@ flutter run -d chrome \
 
 Seeded admin identity: **`maag888@gmail.com`**.
 
-**Never commit the password.** Pass it only at run/build time:
+Release and local builds use a **private-app default** `ADMIN_PASSWORD` baked into the binary (see `lib/auth/admin_config.dart`), so you can sign in without remembering `--dart-define`. Override at run/build time when you want a different password:
 
 ```sh
 flutter run -d chrome \
-  --dart-define=ADMIN_PASSWORD=YOUR_SECRET_HERE \
+  --dart-define=ADMIN_PASSWORD=YOUR_OVERRIDE_HERE \
   --web-browser-flag "--window-size=390,844"
 ```
 
-On first launch the password is **hashed into flutter_secure_storage**. Later runs can authenticate from that stored hash without re-supplying the define (until storage is cleared). You may still pass `ADMIN_PASSWORD` every run if you prefer.
+On launch the effective password is **hashed into flutter_secure_storage** (refreshed when the compile-time value changes). `--dart-define=ADMIN_PASSWORD=...` always wins over the default.
 
 Optional live search (otherwise mock search with an on-screen note):
 
 ```sh
 flutter run -d chrome \
-  --dart-define=ADMIN_PASSWORD=YOUR_SECRET_HERE \
   --dart-define=YOUTUBE_API_KEY=YOUR_KEY_HERE
 ```
 
@@ -177,10 +176,10 @@ scripts/
 
 ## Secrets policy
 
-- **Do not** commit YouTube, RevenueCat, or **admin passwords**.
-- Mock demo needs **zero** secrets.
+- **Do not** commit YouTube or RevenueCat keys.
+- Mock demo needs **zero** API keys.
 - Pass YouTube key only via `--dart-define=YOUTUBE_API_KEY=...` when testing live.
-- Pass admin password only via `--dart-define=ADMIN_PASSWORD=...` (or rely on the one-time secure-storage bootstrap from that define).
+- Admin password ships with a private-app default in `AdminConfig`; override with `--dart-define=ADMIN_PASSWORD=...` when needed. Treat the repo as private if that default must stay confidential.
 
 ## Tests / analyze
 
