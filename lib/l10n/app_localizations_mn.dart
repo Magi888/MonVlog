@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -399,9 +400,8 @@ class AppLocalizationsMn extends AppLocalizations {
   String get noDescription => 'Энэ видеонд тайлбар байхгүй.';
 
   @override
-  String playSnack(String title) {
-    return '“$title” тоглуулах — апп доторх тоглуулагч M3-д ирнэ';
-  }
+  String get playerMissingId =>
+      'Апп дотор тоглуулах боломжгүй — YouTube ID олдсонгүй.';
 
   @override
   String get authOnlySeededAdmin =>

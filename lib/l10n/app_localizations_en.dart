@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -397,9 +398,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDescription => 'No description available for this video.';
 
   @override
-  String playSnack(String title) {
-    return 'Play “$title” — in-app player arrives in M3';
-  }
+  String get playerMissingId =>
+      'This video can’t play in-app — missing YouTube id.';
 
   @override
   String get authOnlySeededAdmin =>

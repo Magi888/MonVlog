@@ -49,6 +49,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Optional: smoother YouTube platform views on API 34+ Vulkan (HCPP). -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableHcpp"
+            android:value="true" />
     </application>
     <queries>
         <intent>

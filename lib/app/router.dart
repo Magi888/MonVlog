@@ -10,6 +10,7 @@ import '../features/admin/admin_login_screen.dart';
 import '../features/channel/channel_browse_screen.dart';
 import '../features/detail/video_detail_screen.dart';
 import '../features/phone/phone_shell.dart';
+import '../features/player/youtube_player_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/tv/tv_shell.dart';
 import '../l10n/app_localizations.dart';
@@ -128,6 +129,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   thumbnailUrl: '',
                 );
           return VideoDetailScreen(item: item);
+        },
+      ),
+      GoRoute(
+        path: '/play',
+        name: 'play',
+        builder: (context, state) {
+          final extra = state.extra;
+          final l10n = AppLocalizations.of(context);
+          final item = extra is VideoItem
+              ? extra
+              : VideoItem(
+                  id: '',
+                  title: l10n.missingVideo,
+                  channelName: '',
+                  thumbnailUrl: '',
+                );
+          return YoutubePlayerScreen(item: item);
         },
       ),
     ],
