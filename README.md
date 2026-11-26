@@ -43,8 +43,10 @@ One Flutter Android **APK / AAB** installs on:
 flutter build apk --release
 flutter build appbundle --release
 
-adb install -r build/app/outputs/flutter-apk/app-release.apk
-# TV over Wi‑Fi: adb connect TV_IP:5555   then the same install command
+# Clean reinstall (needed to refresh a cached Flutter launcher icon on Samsung):
+adb uninstall com.monvlog.monvlog
+adb install build/app/outputs/flutter-apk/app-release.apk
+# TV over Wi‑Fi: adb connect TV_IP:5555   then install (TV can use -r)
 ```
 
 - **Stock Flutter does not ship a Tizen target.** Pure Tizen-only Samsung TVs
