@@ -206,8 +206,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchYoutubeChannels => 'Search YouTube channels';
 
   @override
+  String get searchYoutubeChannelsOptional => 'Optional: search by name';
+
+  @override
   String get catalogAdminBlurb =>
-      'Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.';
+      'Prefer pasting a channel or playlist URL above. Name search is secondary (needs YOUTUBE_API_KEY for live results).';
+
+  @override
+  String get linkChannelTitle => 'Link a YouTube channel';
+
+  @override
+  String get linkChannelBlurb =>
+      'Paste a channel URL (/@handle, /channel/UC…, /c/…) or bare UC id. Resolves via the YouTube API when a key is set.';
+
+  @override
+  String get channelLinkHint => 'https://youtube.com/@handle or /channel/UC…';
+
+  @override
+  String get linkChannel => 'Link';
+
+  @override
+  String get invalidChannelLink =>
+      'Couldn’t parse a channel URL or UC id from that text.';
+
+  @override
+  String get channelLinkNeedsApiKey =>
+      'YOUTUBE_API_KEY required for @handle /c/ /user/ links. Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.';
+
+  @override
+  String addedChannelMock(String name) {
+    return 'Linked channel “$name” (mock details — add YOUTUBE_API_KEY for live metadata)';
+  }
+
+  @override
+  String channelLinkError(String error) {
+    return 'Channel link failed: $error';
+  }
+
+  @override
+  String get youtubeApiKeyMissingBanner =>
+      'YOUTUBE_API_KEY missing. /channel/UC… and playlist IDs still link with mock metadata. For @handle /c/ /user/ and live titles, run with --dart-define=YOUTUBE_API_KEY=YOUR_KEY.';
 
   @override
   String get linkPlaylistTitle => 'Link a YouTube playlist';
@@ -274,7 +312,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mockSearchBanner =>
-      'Mock search — YouTube API key not configured.';
+      'Mock search — YouTube API key not configured. Prefer linking by channel URL above, or pass --dart-define=YOUTUBE_API_KEY=...';
 
   @override
   String get playlist => 'Playlist';

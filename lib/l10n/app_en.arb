@@ -93,7 +93,31 @@
   "browseApp": "Browse app",
   "signOut": "Sign out",
   "searchYoutubeChannels": "Search YouTube channels",
-  "catalogAdminBlurb": "Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.",
+  "searchYoutubeChannelsOptional": "Optional: search by name",
+  "catalogAdminBlurb": "Prefer pasting a channel or playlist URL above. Name search is secondary (needs YOUTUBE_API_KEY for live results).",
+  "linkChannelTitle": "Link a YouTube channel",
+  "linkChannelBlurb": "Paste a channel URL (/@handle, /channel/UC…, /c/…) or bare UC id. Resolves via the YouTube API when a key is set.",
+  "channelLinkHint": "https://youtube.com/@handle or /channel/UC…",
+  "linkChannel": "Link",
+  "invalidChannelLink": "Couldn’t parse a channel URL or UC id from that text.",
+  "channelLinkNeedsApiKey": "YOUTUBE_API_KEY required for @handle /c/ /user/ links. Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.",
+  "addedChannelMock": "Linked channel “{name}” (mock details — add YOUTUBE_API_KEY for live metadata)",
+  "@addedChannelMock": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "channelLinkError": "Channel link failed: {error}",
+  "@channelLinkError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "youtubeApiKeyMissingBanner": "YOUTUBE_API_KEY missing. /channel/UC… and playlist IDs still link with mock metadata. For @handle /c/ /user/ and live titles, run with --dart-define=YOUTUBE_API_KEY=YOUR_KEY.",
   "linkPlaylistTitle": "Link a YouTube playlist",
   "linkPlaylistBlurb": "Paste a playlist URL or ID (list=PL…). Resolves title/channel via the YouTube API when a key is set.",
   "playlistLinkHint": "https://youtube.com/playlist?list=PL… or PL…",
@@ -149,7 +173,7 @@
       }
     }
   },
-  "mockSearchBanner": "Mock search — YouTube API key not configured.",
+  "mockSearchBanner": "Mock search — YouTube API key not configured. Prefer linking by channel URL above, or pass --dart-define=YOUTUBE_API_KEY=...",
   "playlist": "Playlist",
   "channel": "Channel",
   "mockLabel": "mock",

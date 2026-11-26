@@ -51,5 +51,67 @@ void main() {
         'UCQXxhQHalYjwMictp1lUbtg',
       );
     });
+
+    test('does not treat @handle as channel id', () {
+      expect(
+        YoutubeIdParser.parseChannelId('https://www.youtube.com/@Gremix'),
+        isNull,
+      );
+    });
+  });
+
+  group('parseChannelRef', () {
+    test('parses /@handle URL', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://www.youtube.com/@TselmegVlog',
+      );
+      expect(ref, isNotNull);
+      expect(ref!.kind, YoutubeChannelRefKind.handle);
+      expect(ref.value, 'TselmegVlog');
+      expect(ref.requiresApiLookup, isTrue);
+    });
+
+    test('parses bare @handle', () {
+      final ref = YoutubeIdParser.parseChannelRef('@Gremix');
+      expect(ref?.kind, YoutubeChannelRefKind.handle);
+      expect(ref?.value, 'Gremix');
+    });
+
+    test('parses /channel/UC URL', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://youtube.com/channel/UCQXxhQHalYjwMictp1lUbtg',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.channelId);
+      expect(ref?.value, 'UCQXxhQHalYjwMictp1lUbtg');
+      expect(ref?.requiresApiLookup, isFalse);
+    });
+
+    test('parses /c/ custom URL', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://www.youtube.com/c/PositiveMongolians',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.customUrl);
+      expect(ref?.value, 'PositiveMongolians');
+    });
+
+    test('parses /user/ username URL', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://www.youtube.com/user/GoogleDevelopers',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.username);
+      expect(ref?.value, 'GoogleDevelopers');
+    });
+
+    test('parses relative /@handle path', () {
+      final ref = YoutubeIdParser.parseChannelRef('/@Damisuna');
+      expect(ref?.kind, YoutubeChannelRefKind.handle);
+      expect(ref?.value, 'Damisuna');
+    });
+
+    test('rejects garbage', () {
+      expect(YoutubeIdParser.parseChannelRef(''), isNull);
+      expect(YoutubeIdParser.parseChannelRef('not a channel'), isNull);
+      expect(YoutubeIdParser.parseChannelRef('https://example.com/foo'), isNull);
+    });
   });
 }
