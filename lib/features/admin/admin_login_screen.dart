@@ -6,13 +6,17 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../auth/admin_auth_providers.dart';
+import '../../auth/admin_auth_service.dart';
 import '../../auth/admin_config.dart';
+import '../../l10n/app_localizations.dart';
+import '../../locale/language_switch.dart';
 import '../phone/widgets/monvlog_logo_mark.dart';
 
 /// Branded MonVlog entry / admin login.
 ///
-/// Admin (`maag888@gmail.com` + compile-time `ADMIN_PASSWORD`) → catalog.
+/// Admin (`maag888@gmail.com` + `ADMIN_PASSWORD` dart-define) → catalog.
 /// Everyone else can **Continue as guest** into the phone shell (read-only).
+/// Language switch is available here for guests before entering the app.
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
 
@@ -27,7 +31,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
   final _formKey = GlobalKey<FormState>();
   var _busy = false;
   var _obscure = true;
-  String? _error;
+  String? _errorCode;
 
   late final AnimationController _motion;
   late final Animation<double> _fade;
@@ -65,9 +69,22 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
     context.go(_guestDestination(context));
   }
 
+  String _localizeError(AppLocalizations l10n, String? code) {
+    switch (code) {
+      case AdminAuthResult.onlySeededAdmin:
+        return l10n.authOnlySeededAdmin;
+      case AdminAuthResult.passwordRequired:
+        return l10n.authPasswordRequired;
+      case AdminAuthResult.invalidCredentials:
+        return l10n.authInvalidCredentials;
+      default:
+        return code ?? '';
+    }
+  }
+
   Future<void> _submit() async {
     setState(() {
-      _error = null;
+      _errorCode = null;
       _busy = true;
     });
     final result = await ref.read(adminSessionProvider.notifier).login(
@@ -79,12 +96,13 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
     if (result.success) {
       context.go('/admin/catalog');
     } else {
-      setState(() => _error = result.message);
+      setState(() => _errorCode = result.message);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final session = ref.watch(adminSessionProvider);
     if (session.valueOrNull?.isAdmin == true) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,7 +129,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              // Soft brand glow behind the mark.
               Positioned(
                 top: -40,
                 left: 0,
@@ -141,7 +158,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back_rounded),
                     color: MonVlogTheme.onBg,
-                    tooltip: 'Back',
+                    tooltip: l10n.back,
                     onPressed: () {
                       if (context.canPop()) {
                         context.pop();
@@ -180,7 +197,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Монголчуудын нэгдэл',
+                                l10n.taglineUnion,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.manrope(
                                   color: MonVlogTheme.onBg,
@@ -190,7 +207,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Admin sign-in or browse as a guest',
+                                l10n.loginSubtitle,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.manrope(
                                   color: MonVlogTheme.muted,
@@ -207,12 +224,12 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                   color: MonVlogTheme.onBg,
                                 ),
                                 decoration: _decoration(
-                                  label: 'Email',
+                                  label: l10n.email,
                                   icon: Icons.mail_outline_rounded,
                                 ),
                                 validator: (v) {
                                   if (v == null || v.trim().isEmpty) {
-                                    return 'Email required';
+                                    return l10n.emailRequired;
                                   }
                                   return null;
                                 },
@@ -227,7 +244,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                   color: MonVlogTheme.onBg,
                                 ),
                                 decoration: _decoration(
-                                  label: 'Password',
+                                  label: l10n.password,
                                   icon: Icons.lock_outline_rounded,
                                 ).copyWith(
                                   suffixIcon: IconButton(
@@ -249,15 +266,15 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                 },
                                 validator: (v) {
                                   if (v == null || v.isEmpty) {
-                                    return 'Password required';
+                                    return l10n.passwordRequired;
                                   }
                                   return null;
                                 },
                               ),
-                              if (_error != null) ...[
+                              if (_errorCode != null) ...[
                                 const SizedBox(height: 12),
                                 Text(
-                                  _error!,
+                                  _localizeError(l10n, _errorCode),
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.manrope(
                                     color: MonVlogTheme.coral,
@@ -300,7 +317,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                         ),
                                       )
                                     : Text(
-                                        'Login',
+                                        l10n.login,
                                         style: GoogleFonts.manrope(
                                           fontWeight: FontWeight.w800,
                                           fontSize: 16,
@@ -325,7 +342,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                   ),
                                 ),
                                 child: Text(
-                                  'Continue as guest',
+                                  l10n.continueAsGuest,
                                   style: GoogleFonts.manrope(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 15,
@@ -333,9 +350,10 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                 ),
                               ),
                               const SizedBox(height: 20),
+                              const LanguageSwitchTile(compact: true),
+                              const SizedBox(height: 16),
                               Text(
-                                'Guests browse Community & Watch read-only. '
-                                'Only the seeded admin can curate the catalog.',
+                                l10n.loginFooter,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.manrope(
                                   color: MonVlogTheme.muted,

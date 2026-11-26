@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
 import '../../auth/admin_auth_providers.dart';
+import '../../l10n/app_localizations.dart';
 import 'community_screen.dart';
 import 'phone_profile_screen.dart';
 import 'phone_watch_screen.dart';
@@ -67,6 +68,7 @@ class _PhoneShellState extends ConsumerState<PhoneShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isAdmin = ref.watch(isAdminProvider);
     final labelStyle = GoogleFonts.manrope(
       fontSize: 12,
@@ -91,7 +93,7 @@ class _PhoneShellState extends ConsumerState<PhoneShell> {
               child: Material(
                 color: Colors.transparent,
                 child: IconButton(
-                  tooltip: isAdmin ? 'Catalog admin' : 'Admin sign-in',
+                  tooltip: isAdmin ? l10n.catalogAdmin : l10n.adminSignIn,
                   onPressed: _openAdmin,
                   icon: Icon(
                     isAdmin
@@ -132,39 +134,39 @@ class _PhoneShellState extends ConsumerState<PhoneShell> {
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 );
               }),
-              destinations: const [
+              destinations: [
                 NavigationDestination(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.home_outlined,
                     color: MonVlogTheme.onBg,
                   ),
-                  selectedIcon: Icon(
+                  selectedIcon: const Icon(
                     Icons.home_rounded,
                     color: MonVlogTheme.coral,
                   ),
-                  label: 'Community',
+                  label: l10n.navCommunity,
                 ),
                 NavigationDestination(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.play_circle_outline,
                     color: MonVlogTheme.onBg,
                   ),
-                  selectedIcon: Icon(
+                  selectedIcon: const Icon(
                     Icons.play_circle_filled_rounded,
                     color: MonVlogTheme.brandRed,
                   ),
-                  label: 'Watch',
+                  label: l10n.navWatch,
                 ),
                 NavigationDestination(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.person_outline_rounded,
                     color: MonVlogTheme.onBg,
                   ),
-                  selectedIcon: Icon(
+                  selectedIcon: const Icon(
                     Icons.person_rounded,
                     color: MonVlogTheme.coral,
                   ),
-                  label: 'Profile',
+                  label: l10n.navProfile,
                 ),
               ],
             ),

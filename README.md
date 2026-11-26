@@ -8,6 +8,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 **Tagline:** Монголчуудын нэгдэл  
 **Brand red:** `#E71616` · coral accents `#E58A8A`  
 **Tagline (splash):** Watch anywhere, make anywhere  
+**Locales:** Mongolian (`mn`) + English (`en`) — **default `mn`** (product-first; MonVlog is a Mongolian community app). Preference persists via `shared_preferences` (`app_locale`). Toggle: **Profile → Language** (guests + admin); also on the entry login screen and TV Settings.  
 **Price (later):** **$3.99/month** via RevenueCat (stubbed)  
 **Repo:** [Magi888/MonVlog](https://github.com/Magi888/MonVlog)
 
@@ -17,7 +18,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 |---|---|---|
 | **Phone community** | `/phone` | EUROPE TOUR hero, Invite / Оператор, tabs incl. **МОНГОЛ ВЛОГ & КОНТЕНТ**, All Video Channels cards |
 | **Phone Watch** | Watch tab / `/phone/watch` | Netflix-style dark horizontal rails (mock catalog) |
-| **Phone Profile** | Profile tab / `/phone/profile` | Guest account + admin sign-in entry (bottom menu always visible) |
+| **Phone Profile** | Profile tab / `/phone/profile` | Guest account + admin sign-in + **mn/en language switch** (bottom menu always visible) |
 | **TV / Samsung living room** | `/tv` (legacy `/home` alias) | Left rail + focusable shelves; **no** phone bottom bar. On phone viewports `/home` redirects to `/phone` so the bottom menu (Community / Watch / Profile) always shows. |
 | **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login or **Continue as guest** |
 | **Admin catalog** | `/admin/catalog` | Search YouTube channels/playlists → add to curated catalog (admin only) |

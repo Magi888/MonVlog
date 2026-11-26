@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/app_localizations.dart';
+import '../locale/locale_controller.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -10,6 +13,7 @@ class MonVlogApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final locale = ref.watch(localeControllerProvider);
     return MaterialApp.router(
       title: 'MonVlog',
       debugShowCheckedModeBanner: false,
@@ -19,6 +23,14 @@ class MonVlogApp extends ConsumerWidget {
       theme: MonVlogTheme.phone,
       darkTheme: MonVlogTheme.dark,
       themeMode: ThemeMode.dark,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       routerConfig: router,
     );
   }

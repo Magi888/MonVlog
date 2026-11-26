@@ -1,0 +1,190 @@
+{
+  "@@locale": "en",
+  "appTitle": "MonVlog",
+  "@appTitle": {
+    "description": "Brand name — never translate"
+  },
+  "brandSite": "Monvlog.com",
+  "@brandSite": {
+    "description": "Brand site name — keep as Monvlog.com"
+  },
+  "taglineUnion": "Монголчуудын нэгдэл",
+  "@taglineUnion": {
+    "description": "Product tagline kept in Mongolian across locales"
+  },
+  "splashTagline": "Watch anywhere, make anywhere",
+  "navCommunity": "Community",
+  "navWatch": "Watch",
+  "navProfile": "Profile",
+  "adminSignIn": "Admin sign-in",
+  "catalogAdmin": "Catalog admin",
+  "profileTitle": "Profile",
+  "browsingAsGuest": "Browsing as guest",
+  "catalogAdminSignedIn": "Catalog admin signed in",
+  "guest": "Guest",
+  "adminRole": "Admin",
+  "watchOnlyAccess": "Watch-only access",
+  "sectionAccount": "Account",
+  "sectionApp": "App",
+  "openCatalogAdmin": "Open catalog admin",
+  "signOutToGuest": "Sign out to guest",
+  "signedOutGuestSnack": "Signed out — browsing as guest",
+  "aboutMonVlog": "About MonVlog",
+  "language": "Language",
+  "languageMongolian": "Монгол",
+  "languageEnglish": "English",
+  "loginSubtitle": "Admin sign-in or browse as a guest",
+  "email": "Email",
+  "password": "Password",
+  "emailRequired": "Email required",
+  "passwordRequired": "Password required",
+  "login": "Login",
+  "continueAsGuest": "Continue as guest",
+  "loginFooter": "Guests browse Community & Watch read-only. Only the seeded admin can curate the catalog. Password via --dart-define=ADMIN_PASSWORD (never commit).",
+  "back": "Back",
+  "invite": "Invite",
+  "operator": "Оператор",
+  "tabHome": "НҮҮР ХУУДАС",
+  "tabVlogContent": "МОНГОЛ ВЛОГ & КОНТЕНТ",
+  "tabOnlineShop": "ОНЛАЙН ШОП",
+  "tabPremium": "PREMIUM",
+  "stubSuffix": "{label} — mock (stubbed)",
+  "@stubSuffix": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "notifications": "Notifications",
+  "cart": "Cart",
+  "more": "More",
+  "mockTabLater": "Mock tab — content lands later.",
+  "adsSection": "Зар Сурталчилгаа",
+  "auPairGermany": "AU-PAIR · Germany",
+  "mockPromoBanner": "Mock community promo banner",
+  "reminder": "Сануулга",
+  "newContentComingSoon": "New Content Coming Soon!",
+  "newContentBody": "Once Monvlog.com adds new content, you’ll be able to view it here.",
+  "uploadVideo": "Бичлэг байршуулая",
+  "allVideoChannels": "All Video Channels",
+  "manage": "Manage",
+  "videosCount": "{count} Videos",
+  "@videosCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewChannel": "View Channel",
+  "freeTier": "Free",
+  "catalogError": "Catalog error: {error}",
+  "@catalogError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mockCatalog": "Mock catalog",
+  "liveYoutube": "Live YouTube",
+  "retry": "Retry",
+  "browseApp": "Browse app",
+  "signOut": "Sign out",
+  "searchYoutubeChannels": "Search YouTube channels",
+  "catalogAdminBlurb": "Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.",
+  "channelNameHint": "Channel name…",
+  "search": "Search",
+  "searchError": "Search error: {error}",
+  "@searchError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "enterChannelToSearch": "Enter a channel name to search.",
+  "noResults": "No results.",
+  "curatedCatalog": "Curated catalog",
+  "channelsSource": "{count} channels · source {source}",
+  "@channelsSource": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "unverified": "unverified",
+  "localPlaylists": "Local playlists ({count})",
+  "@localPlaylists": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mockSearchBanner": "Mock search — YouTube API key not configured.",
+  "playlist": "Playlist",
+  "channel": "Channel",
+  "mockLabel": "mock",
+  "add": "Add",
+  "addedPlaylist": "Added playlist “{title}” to catalog",
+  "@addedPlaylist": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "addedChannel": "Added “{name}” → {category}",
+  "@addedChannel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "shelfFeatured": "Featured",
+  "shelfTravel": "Travel",
+  "shelfFood": "Food",
+  "shelfDaily": "Daily life",
+  "tvNavHome": "Home",
+  "tvNavCreators": "Creators",
+  "tvNavSearch": "Search",
+  "tvNavLibrary": "Library",
+  "tvNavSettings": "Settings",
+  "tvCreatorsSubtitle": "Curated Mongolian channels — mock shelf coming soon.",
+  "tvSearchSubtitle": "On-screen keyboard search lands in a later milestone.",
+  "tvLibrarySubtitle": "Continue watching + favorites (local) — stubbed.",
+  "tvSettingsBlurb": "$3.99/mo via RevenueCat (stub). Samsung: Android TV / Google TV leanback. Stock Flutter does not ship Tizen — a Tizen plugin would be needed later for native Tizen builds.",
+  "missingVideo": "Missing video",
+  "routeError": "Route error: {error}",
+  "@routeError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "play": "Play",
+  "openInYoutube": "Open in YouTube",
+  "noDescription": "No description available for this video.",
+  "playSnack": "Play “{title}” — in-app player arrives in M3",
+  "@playSnack": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "authOnlySeededAdmin": "Only the seeded admin account can sign in.",
+  "authPasswordRequired": "Password is required.",
+  "authInvalidCredentials": "Invalid email or password."
+}

@@ -8,6 +8,8 @@ import '../../app/theme.dart';
 import '../../auth/admin_auth_providers.dart';
 import '../../data/catalog_providers.dart';
 import '../../data/catalog_repository.dart';
+import '../../l10n/app_localizations.dart';
+import '../../locale/language_switch.dart';
 import '../home/widgets/shelf_row.dart';
 
 /// Netflix-style Android TV / Google TV (Samsung living-room) shell.
@@ -25,18 +27,18 @@ class _TvShellState extends ConsumerState<TvShell> {
   late int _section;
   final _contentFocus = FocusNode(debugLabel: 'tv-content');
 
-  static const _nav = [
-    (Icons.home_rounded, 'Home'),
-    (Icons.people_outline_rounded, 'Creators'),
-    (Icons.search_rounded, 'Search'),
-    (Icons.video_library_outlined, 'Library'),
-    (Icons.settings_outlined, 'Settings'),
+  List<(IconData, String)> _nav(AppLocalizations l10n) => [
+    (Icons.home_rounded, l10n.tvNavHome),
+    (Icons.people_outline_rounded, l10n.tvNavCreators),
+    (Icons.search_rounded, l10n.tvNavSearch),
+    (Icons.video_library_outlined, l10n.tvNavLibrary),
+    (Icons.settings_outlined, l10n.tvNavSettings),
   ];
 
   @override
   void initState() {
     super.initState();
-    _section = widget.initialSection.clamp(0, _nav.length - 1);
+    _section = widget.initialSection.clamp(0, 4);
   }
 
   @override
@@ -47,13 +49,15 @@ class _TvShellState extends ConsumerState<TvShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final nav = _nav(l10n);
     return Scaffold(
       backgroundColor: MonVlogTheme.bg,
       body: Row(
         children: [
           _TvLeftRail(
             selected: _section,
-            items: _nav,
+            items: nav,
             onSelect: (i) => setState(() => _section = i),
             onMoveRight: () => _contentFocus.requestFocus(),
           ),
@@ -233,19 +237,19 @@ class _TvSectionBody extends ConsumerWidget {
       case 0:
         return const _TvHomeRails();
       case 1:
-        return const _TvPlaceholder(
-          title: 'Creators',
-          subtitle: 'Curated Mongolian channels — mock shelf coming soon.',
+        return _TvPlaceholder(
+          title: AppLocalizations.of(context).tvNavCreators,
+          subtitle: AppLocalizations.of(context).tvCreatorsSubtitle,
         );
       case 2:
-        return const _TvPlaceholder(
-          title: 'Search',
-          subtitle: 'On-screen keyboard search lands in a later milestone.',
+        return _TvPlaceholder(
+          title: AppLocalizations.of(context).tvNavSearch,
+          subtitle: AppLocalizations.of(context).tvSearchSubtitle,
         );
       case 3:
-        return const _TvPlaceholder(
-          title: 'Library',
-          subtitle: 'Continue watching + favorites (local) — stubbed.',
+        return _TvPlaceholder(
+          title: AppLocalizations.of(context).tvNavLibrary,
+          subtitle: AppLocalizations.of(context).tvLibrarySubtitle,
         );
       default:
         return const _TvSettingsSection();
@@ -258,6 +262,7 @@ class _TvSettingsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final isAdmin = ref.watch(isAdminProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(36, 40, 36, 24),
@@ -265,7 +270,7 @@ class _TvSettingsSection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Settings',
+            l10n.tvNavSettings,
             style: GoogleFonts.bebasNeue(
               color: MonVlogTheme.onBg,
               fontSize: 42,
@@ -274,20 +279,31 @@ class _TvSettingsSection extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '\$3.99/mo via RevenueCat (stub). Samsung: Android TV / Google TV leanback. Stock Flutter does not ship Tizen — a Tizen plugin would be needed later for native Tizen builds.',
+            l10n.tvSettingsBlurb,
             style: GoogleFonts.manrope(
               color: MonVlogTheme.muted,
               fontSize: 15,
               height: 1.45,
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
+          Text(
+            l10n.language,
+            style: GoogleFonts.manrope(
+              color: MonVlogTheme.onBg,
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const LanguageSwitchTile(),
+          const SizedBox(height: 20),
           if (isAdmin)
             FilledButton.icon(
               onPressed: () => context.go('/admin/catalog'),
               icon: const Icon(Icons.admin_panel_settings_outlined),
               label: Text(
-                'Open catalog admin',
+                l10n.openCatalogAdmin,
                 style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
@@ -303,15 +319,15 @@ class _TvSettingsSection extends ConsumerWidget {
               onPressed: () => context.go('/admin/login'),
               icon: const Icon(Icons.lock_outline_rounded),
               label: Text(
-                'Admin sign-in',
+                l10n.adminSignIn,
                 style: GoogleFonts.manrope(fontWeight: FontWeight.w600),
               ),
             ),
           const SizedBox(height: 12),
           Text(
             isAdmin
-                ? 'Signed in as admin — you can curate channels.'
-                : 'Viewers browse shelves only. Admin can search & add channels.',
+                ? l10n.catalogAdminSignedIn
+                : l10n.watchOnlyAccess,
             style: GoogleFonts.manrope(
               color: MonVlogTheme.muted,
               fontSize: 13,

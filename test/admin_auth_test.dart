@@ -44,14 +44,12 @@ class _TestAdminAuth {
     required String password,
   }) async {
     if (!AdminConfig.isAdminEmail(email)) {
-      return const AdminAuthResult.failure(
-        'Only the seeded admin account can sign in.',
-      );
+      return const AdminAuthResult.failure(AdminAuthResult.onlySeededAdmin);
     }
     final stored = await _secure.read(key: _passwordHashKey);
     final hash = AdminAuthService.hashPassword(password);
     if (stored == null || stored != hash) {
-      return const AdminAuthResult.failure('Invalid email or password.');
+      return const AdminAuthResult.failure(AdminAuthResult.invalidCredentials);
     }
     final prefs = await _p;
     await prefs.setBool(_sessionActiveKey, true);
@@ -114,7 +112,7 @@ void main() {
         password: 'test-pass',
       );
       expect(result.success, isFalse);
-      expect(result.message, contains('seeded admin'));
+      expect(result.message, AdminAuthResult.onlySeededAdmin);
     });
 
     test('accepts seeded admin with matching password', () async {

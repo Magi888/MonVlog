@@ -83,19 +83,17 @@ class AdminAuthService {
   }) async {
     final trimmedEmail = email.trim().toLowerCase();
     if (!AdminConfig.isAdminEmail(trimmedEmail)) {
-      return const AdminAuthResult.failure(
-        'Only the seeded admin account can sign in.',
-      );
+      return const AdminAuthResult.failure(AdminAuthResult.onlySeededAdmin);
     }
 
     final candidate = password.trim();
     if (candidate.isEmpty) {
-      return const AdminAuthResult.failure('Password is required.');
+      return const AdminAuthResult.failure(AdminAuthResult.passwordRequired);
     }
 
     final ok = await _passwordMatches(candidate);
     if (!ok) {
-      return const AdminAuthResult.failure('Invalid email or password.');
+      return const AdminAuthResult.failure(AdminAuthResult.invalidCredentials);
     }
 
     // Keep storage in sync if define was used before first bootstrap completed.
@@ -163,6 +161,11 @@ class AdminAuthResult {
 
   const AdminAuthResult.failure(String message)
       : this._(success: false, message: message);
+
+  /// Stable error codes — map to [AppLocalizations] in UI.
+  static const onlySeededAdmin = 'only_seeded_admin';
+  static const passwordRequired = 'password_required';
+  static const invalidCredentials = 'invalid_credentials';
 
   final bool success;
   final AdminSession? session;

@@ -1,3 +1,4 @@
+import '../l10n/app_localizations.dart';
 import 'models/video_item.dart';
 
 /// Shelf type ids used by home rails (matches curated channel categories).
@@ -9,6 +10,7 @@ abstract final class ShelfTypes {
 
   static const all = [featured, travel, food, daily];
 
+  /// English fallback when no [AppLocalizations] is available (tests/data).
   static String displayTitle(String id) {
     switch (id) {
       case featured:
@@ -19,6 +21,21 @@ abstract final class ShelfTypes {
         return 'Food';
       case daily:
         return 'Daily life';
+      default:
+        return id;
+    }
+  }
+
+  static String localizedTitle(String id, AppLocalizations l10n) {
+    switch (id) {
+      case featured:
+        return l10n.shelfFeatured;
+      case travel:
+        return l10n.shelfTravel;
+      case food:
+        return l10n.shelfFood;
+      case daily:
+        return l10n.shelfDaily;
       default:
         return id;
     }
