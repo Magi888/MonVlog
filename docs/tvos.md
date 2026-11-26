@@ -54,4 +54,4 @@ hand-written Xcode tvOS project that the stock Flutter tool cannot build.
 1. `flutter-tvos doctor` clean
 2. Boot Apple TV simulator; D-pad / Siri Remote focus reaches Home posters
 3. Confirm lean-back focus rings (see `PosterCard`)
-4. Defer real IAP / YouTube player until M3–M4
+4. Defer RevenueCat IAP until M4; in-app YouTube player is on `/play` (Android/iOS WebView — verify tvOS plugin support before relying on it)

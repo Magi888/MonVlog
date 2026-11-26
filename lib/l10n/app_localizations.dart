@@ -794,11 +794,11 @@ abstract class AppLocalizations {
   /// **'No description available for this video.'**
   String get noDescription;
 
-  /// No description provided for @playSnack.
+  /// No description provided for @playerMissingId.
   ///
   /// In en, this message translates to:
-  /// **'Play “{title}” — in-app player arrives in M3'**
-  String playSnack(String title);
+  /// **'This video can’t play in-app — missing YouTube id.'**
+  String get playerMissingId;
 
   /// No description provided for @authOnlySeededAdmin.
   ///

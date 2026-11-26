@@ -222,14 +222,7 @@
   "play": "Play",
   "openInYoutube": "Open in YouTube",
   "noDescription": "No description available for this video.",
-  "playSnack": "Play “{title}” — in-app player arrives in M3",
-  "@playSnack": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
+  "playerMissingId": "This video can’t play in-app — missing YouTube id.",
   "authOnlySeededAdmin": "Only the seeded admin account can sign in.",
   "authPasswordRequired": "Password is required.",
   "authInvalidCredentials": "Invalid email or password.",

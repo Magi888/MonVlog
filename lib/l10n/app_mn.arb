@@ -116,7 +116,7 @@
   "play": "Тоглуулах",
   "openInYoutube": "YouTube дээр нээх",
   "noDescription": "Энэ видеонд тайлбар байхгүй.",
-  "playSnack": "“{title}” тоглуулах — апп доторх тоглуулагч M3-д ирнэ",
+  "playerMissingId": "Апп дотор тоглуулах боломжгүй — YouTube ID олдсонгүй.",
   "authOnlySeededAdmin": "Зөвхөн тохируулсан админ бүртгэлээр нэвтэрч болно.",
   "authPasswordRequired": "Нууц үг шаардлагатай.",
   "authInvalidCredentials": "Имэйл эсвэл нууц үг буруу.",

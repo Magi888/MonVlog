@@ -23,6 +23,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 | **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login (password + optional biometric unlock) or **Continue as guest** |
 | **Admin catalog** | `/admin/catalog` | Link YouTube channel/playlist by URL (admin only); optional name search |
 | **Channel browse** | `/channel/:channelId` | Open a curated channel — uploads + linked playlists (Netflix shelves) |
+| **In-app player** | `/play` | YouTube IFrame playback (`youtube_player_flutter`); Play on detail opens this. **Open in YouTube** stays as secondary. |
 | Splash | `/splash` | Brand splash → entry login |
 
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
@@ -57,7 +58,7 @@ adb install build/app/outputs/flutter-apk/app-release.apk
 
 ## Requirements
 
-- Flutter **stable** (3.35+ / Dart 3.9+)
+- Flutter **stable** (3.50+ / Dart 3.14+) — required by `youtube_player_flutter` 11
 - Chrome (fast phone + TV viewport demos) or Android emulator / iOS simulator
 - Optional: Android TV emulator for leanback (`/tv`)
 - Optional: YouTube Data API key for live shelves (not required)
@@ -204,6 +205,6 @@ flutter test
 | M2 | YouTube curated catalog → shelves → detail |
 | **UI** | Phone community + Netflix phone Watch + TV left rail |
 | **Admin** | Admin login + YouTube channel/playlist catalog curation |
-| M3 | In-app player |
+| M3 | In-app player (`/play` via `youtube_player_flutter`) |
 | M4 | RevenueCat $3.99/mo gate |
 | M5–M6 | Store readiness & soft launch |
