@@ -94,6 +94,28 @@
   "signOut": "Sign out",
   "searchYoutubeChannels": "Search YouTube channels",
   "catalogAdminBlurb": "Add a channel or playlist to the curated allowlist. Viewers see updated shelves without edit controls.",
+  "linkPlaylistTitle": "Link a YouTube playlist",
+  "linkPlaylistBlurb": "Paste a playlist URL or ID (list=PL…). Resolves title/channel via the YouTube API when a key is set.",
+  "playlistLinkHint": "https://youtube.com/playlist?list=PL… or PL…",
+  "linkPlaylist": "Link",
+  "invalidPlaylistLink": "Couldn’t parse a playlist ID from that URL or text.",
+  "addedPlaylistMock": "Linked playlist “{title}” (mock details — add YOUTUBE_API_KEY for live metadata)",
+  "@addedPlaylistMock": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "playlistLinkError": "Playlist link failed: {error}",
+  "@playlistLinkError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "channelEmpty": "No videos yet for this channel.",
   "channelNameHint": "Channel name…",
   "search": "Search",
   "searchError": "Search error: {error}",
@@ -160,7 +182,7 @@
   "tvNavSearch": "Search",
   "tvNavLibrary": "Library",
   "tvNavSettings": "Settings",
-  "tvCreatorsSubtitle": "Curated Mongolian channels — mock shelf coming soon.",
+  "tvCreatorsSubtitle": "Open a curated Mongolian channel to browse uploads and linked playlists.",
   "tvSearchSubtitle": "On-screen keyboard search lands in a later milestone.",
   "tvLibrarySubtitle": "Continue watching + favorites (local) — stubbed.",
   "tvSettingsBlurb": "$3.99/mo via RevenueCat (stub). Samsung: Android TV / Google TV leanback. Stock Flutter does not ship Tizen — a Tizen plugin would be needed later for native Tizen builds.",

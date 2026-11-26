@@ -7,6 +7,7 @@ import '../auth/admin_auth_providers.dart';
 import '../data/models/video_item.dart';
 import '../features/admin/admin_catalog_screen.dart';
 import '../features/admin/admin_login_screen.dart';
+import '../features/channel/channel_browse_screen.dart';
 import '../features/detail/video_detail_screen.dart';
 import '../features/phone/phone_shell.dart';
 import '../features/splash/splash_screen.dart';
@@ -97,6 +98,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin/catalog',
         name: 'admin-catalog',
         builder: (context, state) => const AdminCatalogScreen(),
+      ),
+      GoRoute(
+        path: '/channel/:channelId',
+        name: 'channel',
+        builder: (context, state) {
+          final raw = state.pathParameters['channelId'] ?? '';
+          final channelId = Uri.decodeComponent(raw);
+          final extra = state.extra;
+          final fallbackName = extra is String ? extra : '';
+          return ChannelBrowseScreen(
+            channelId: channelId,
+            fallbackName: fallbackName,
+          );
+        },
       ),
       GoRoute(
         path: '/detail',

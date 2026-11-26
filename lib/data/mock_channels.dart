@@ -5,6 +5,7 @@ class MockVideoChannel {
     required this.name,
     required this.videoCount,
     required this.bannerSeed,
+    this.youtubeChannelId = '',
     this.tierKey = 'free',
     this.actionKey = 'view',
   });
@@ -14,6 +15,9 @@ class MockVideoChannel {
   final int videoCount;
   final String bannerSeed;
 
+  /// Curated YouTube UC id when known (opens real channel browse).
+  final String youtubeChannelId;
+
   /// `free` → [AppLocalizations.freeTier]
   final String tierKey;
 
@@ -22,6 +26,10 @@ class MockVideoChannel {
 
   String get bannerUrl =>
       'https://picsum.photos/seed/$bannerSeed/640/280';
+
+  /// Route id for `/channel/:id` — prefers real UC id.
+  String get browseId =>
+      youtubeChannelId.isNotEmpty ? youtubeChannelId : id;
 }
 
 /// Curated mock channels inspired by the Wix Spaces Monvlog.com community.
@@ -51,18 +59,21 @@ class MockChannels {
       name: 'Gremix',
       videoCount: 214,
       bannerSeed: 'monvlog-ch-gremix',
+      youtubeChannelId: 'UCQXxhQHalYjwMictp1lUbtg',
     ),
     MockVideoChannel(
       id: 'tselmeg',
       name: 'Tselmeg Vlog',
       videoCount: 96,
       bannerSeed: 'monvlog-ch-tselmeg',
+      youtubeChannelId: 'UCIsvomXQNyFRjpAP_GyWI-Q',
     ),
     MockVideoChannel(
       id: 'positive',
       name: 'Positive Mongolians',
       videoCount: 142,
       bannerSeed: 'monvlog-ch-positive',
+      youtubeChannelId: 'UCXr6n3L8EDVQR-_EUJc-2Nw',
     ),
   ];
 }

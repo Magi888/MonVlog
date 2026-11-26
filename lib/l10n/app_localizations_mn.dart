@@ -210,6 +210,37 @@ class AppLocalizationsMn extends AppLocalizations {
       'Кураторласан жагсаалтад суваг эсвэл плейлист нэмнэ. Үзэгчид шинэчлэгдсэн тавиурыг засварлахгүйгээр харна.';
 
   @override
+  String get linkPlaylistTitle => 'YouTube плейлист холбох';
+
+  @override
+  String get linkPlaylistBlurb =>
+      'Плейлист URL эсвэл ID (list=PL…) буулгана. Түлхүүр тохируулсан үед YouTube API-аар гарчиг/суваг татна.';
+
+  @override
+  String get playlistLinkHint =>
+      'https://youtube.com/playlist?list=PL… эсвэл PL…';
+
+  @override
+  String get linkPlaylist => 'Холбох';
+
+  @override
+  String get invalidPlaylistLink =>
+      'Энэ URL эсвэл текстээс плейлист ID задлаж чадсангүй.';
+
+  @override
+  String addedPlaylistMock(String title) {
+    return '“$title” плейлист холбогдлоо (туршилтын мэдээлэл — шууд метадатад YOUTUBE_API_KEY нэмнэ үү)';
+  }
+
+  @override
+  String playlistLinkError(String error) {
+    return 'Плейлист холболт амжилтгүй: $error';
+  }
+
+  @override
+  String get channelEmpty => 'Энэ сувагт видео байхгүй байна.';
+
+  @override
   String get channelNameHint => 'Сувгийн нэр…';
 
   @override
@@ -297,7 +328,7 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get tvCreatorsSubtitle =>
-      'Кураторласан Монгол сувгууд — туршилтын тавиур удахгүй.';
+      'Кураторласан Монгол сувгийг нээж upload болон холбосон плейлист үзнэ.';
 
   @override
   String get tvSearchSubtitle =>
