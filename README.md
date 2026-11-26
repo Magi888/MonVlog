@@ -27,7 +27,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 | Splash | `/splash` | Brand splash → entry login |
 
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
-Without `YOUTUBE_API_KEY`, admin can still link `/channel/UC…` and playlist IDs (mock metadata); `@handle` / `/c/` / `/user/` need `--dart-define=YOUTUBE_API_KEY=...`. Name search falls back to mock hits with an on-screen banner.
+Without `YOUTUBE_API_KEY`, admin can still link `/channel/UC…` and playlist IDs (mock metadata). `@handle` / vanity / `/c/` / `/user/` prefer `--dart-define=YOUTUBE_API_KEY=...` (recommended); without a key the app may try a best-effort public-page scrape for a UC id, then asks to paste `/channel/UC…` if that fails. Name search falls back to mock hits with an on-screen banner.
 
 ## Samsung phone + Samsung TV (Android)
 
@@ -118,7 +118,7 @@ flutter run -d chrome \
 - After the first successful password login on a phone, MonVlog offers **passkey / biometric unlock** (`local_auth` + secure storage). Next visits can unlock with fingerprint, face, or device PIN; **password stays as fallback**. Toggle later under **Profile** while signed in as admin. (Local-device unlock — not server WebAuthn.)
 - You can also open Admin from the phone top-right icon, TV **Settings → Admin sign-in**, or `/admin/login`.
 - Only the admin session can open `/admin/catalog` (role gate). Guests browse shelves read-only.
-- **Link channel (primary):** paste a YouTube channel URL (`/@handle`, `/channel/UC…`, `/c/…`) or bare `UC…` id. With `YOUTUBE_API_KEY`, title/handle resolve via `channels.list` (`id` / `forHandle` / `forUsername`); without a key, `/channel/UC…` still saves with mock metadata and the UI shows the dart-define hint.
+- **Link channel (primary):** paste a common YouTube channel URL — `https://youtube.com/@handle`, `youtube.com/@handle` (missing scheme OK), `/channel/UC…`, `/c/…`, `/user/…`, legacy vanity `youtube.com/orgiluuntv2`, or bare `UC…`. Share junk (`?si=`, etc.) is ignored. With `YOUTUBE_API_KEY`, title/handle resolve via `channels.list` (`id` / `forHandle` / `forUsername`; vanity/`/c/` also try search). Without a key, `/channel/UC…` still saves with mock metadata; other forms try a best-effort public-page scrape, then show a Mongolian/English helper to paste the UC id (API key path preferred).
 - **Link playlist:** paste a YouTube playlist URL (`?list=PL…`) or bare playlist ID on the admin catalog screen. With `YOUTUBE_API_KEY`, title/channel resolve via `playlists.list`; without a key, the ID still saves with mock metadata.
 - **View channel:** Community **View Channel**, admin curated-list tap, or TV **Creators** open `/channel/:channelId` — uploads + any playlists linked to that channel.
 - Added channels/playlists merge into local JSON overrides (`SharedPreferences`) on top of `assets/config/curated_channels.json` (same shape as optional remote `CURATED_CHANNELS_URL`).

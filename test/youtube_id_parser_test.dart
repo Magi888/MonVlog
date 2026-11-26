@@ -71,6 +71,28 @@ void main() {
       expect(ref.requiresApiLookup, isTrue);
     });
 
+    test('parses youtube.com/@handle without scheme', () {
+      final ref = YoutubeIdParser.parseChannelRef('youtube.com/@orgiluuntv2');
+      expect(ref?.kind, YoutubeChannelRefKind.handle);
+      expect(ref?.value, 'orgiluuntv2');
+    });
+
+    test('parses https://youtube.com/@handle', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://youtube.com/@Damisuna',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.handle);
+      expect(ref?.value, 'Damisuna');
+    });
+
+    test('strips si= share junk from @handle URL', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'youtube.com/@TselmegVlog?si=AbCdEfGhIjKlMnOp',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.handle);
+      expect(ref?.value, 'TselmegVlog');
+    });
+
     test('parses bare @handle', () {
       final ref = YoutubeIdParser.parseChannelRef('@Gremix');
       expect(ref?.kind, YoutubeChannelRefKind.handle);
@@ -84,6 +106,14 @@ void main() {
       expect(ref?.kind, YoutubeChannelRefKind.channelId);
       expect(ref?.value, 'UCQXxhQHalYjwMictp1lUbtg');
       expect(ref?.requiresApiLookup, isFalse);
+    });
+
+    test('strips si= from /channel/UC URL', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://www.youtube.com/channel/UCQXxhQHalYjwMictp1lUbtg?si=xyz',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.channelId);
+      expect(ref?.value, 'UCQXxhQHalYjwMictp1lUbtg');
     });
 
     test('parses /c/ custom URL', () {
@@ -102,10 +132,43 @@ void main() {
       expect(ref?.value, 'GoogleDevelopers');
     });
 
+    test('parses legacy vanity path youtube.com/orgiluuntv2', () {
+      final ref = YoutubeIdParser.parseChannelRef('youtube.com/orgiluuntv2');
+      expect(ref, isNotNull);
+      expect(ref!.kind, YoutubeChannelRefKind.vanity);
+      expect(ref.value, 'orgiluuntv2');
+      expect(ref.displayLabel, '/orgiluuntv2');
+      expect(ref.publicPath, '/orgiluuntv2');
+      expect(ref.requiresApiLookup, isTrue);
+    });
+
+    test('parses vanity with https and si= junk', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'https://youtube.com/orgiluuntv2?si=ShareJunk123',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.vanity);
+      expect(ref?.value, 'orgiluuntv2');
+    });
+
+    test('parses vanity from messy paste text', () {
+      final ref = YoutubeIdParser.parseChannelRef(
+        'Check this: youtube.com/orgiluuntv2?si=abc!',
+      );
+      expect(ref?.kind, YoutubeChannelRefKind.vanity);
+      expect(ref?.value, 'orgiluuntv2');
+    });
+
     test('parses relative /@handle path', () {
       final ref = YoutubeIdParser.parseChannelRef('/@Damisuna');
       expect(ref?.kind, YoutubeChannelRefKind.handle);
       expect(ref?.value, 'Damisuna');
+    });
+
+    test('rejects reserved paths as vanity', () {
+      expect(YoutubeIdParser.parseChannelRef('youtube.com/watch'), isNull);
+      expect(YoutubeIdParser.parseChannelRef('youtube.com/playlist'), isNull);
+      expect(YoutubeIdParser.parseChannelRef('youtube.com/feed'), isNull);
+      expect(YoutubeIdParser.parseChannelRef('youtube.com/results'), isNull);
     });
 
     test('rejects garbage', () {

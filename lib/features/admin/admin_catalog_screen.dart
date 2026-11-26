@@ -75,6 +75,8 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
   Future<void> _linkChannelByUrl() async {
     final l10n = AppLocalizations.of(context);
     final raw = _channelLinkCtrl.text.trim();
+    // Expanded parser: @handle, /channel/UC…, /c/, /user/, vanity, bare UC;
+    // strips ?si= and other share query junk; accepts missing https://.
     final refParsed = YoutubeIdParser.parseChannelRef(raw);
     if (refParsed == null) {
       setState(() => _status = l10n.invalidChannelLink);
@@ -92,6 +94,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
       if (!mounted) return;
 
       if (result.needsApiKey) {
+        // Localized helper: recommend API key or paste /channel/UC… id.
         setState(() => _status = l10n.channelLinkNeedsApiKey);
         return;
       }
@@ -107,7 +110,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
 
       final store = ref.read(catalogStoreProvider);
       final handle = meta.handle.isNotEmpty
-          ? '@${meta.handle}'
+          ? (meta.handle.startsWith('@') ? meta.handle : '@${meta.handle}')
           : (refParsed.kind == YoutubeChannelRefKind.handle
               ? '@${refParsed.value}'
               : '');

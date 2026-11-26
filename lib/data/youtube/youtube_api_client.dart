@@ -11,7 +11,9 @@ class YoutubeApiClient {
     Dio? dio,
     String? apiKey,
     this.baseUrl = 'https://www.googleapis.com/youtube/v3',
+    Future<String?> Function(YoutubeChannelRef ref)? scrapePublicChannelId,
   })  : apiKey = apiKey ?? YoutubeConfig.apiKey,
+        _scrapePublicChannelIdOverride = scrapePublicChannelId,
         _dio = dio ??
             Dio(
               BaseOptions(
@@ -24,6 +26,8 @@ class YoutubeApiClient {
   final Dio _dio;
   final String apiKey;
   final String baseUrl;
+  final Future<String?> Function(YoutubeChannelRef ref)?
+      _scrapePublicChannelIdOverride;
 
   bool get isConfigured => apiKey.trim().isNotEmpty;
 
@@ -217,33 +221,53 @@ class YoutubeApiClient {
 
   /// Resolve a pasted channel URL / id / @handle into [YoutubeChannelMeta].
   ///
+  /// Prefer `--dart-define=YOUTUBE_API_KEY=...` for reliable resolve.
+  ///
   /// Without [apiKey]:
   /// - bare `/channel/UC…` still links with mock metadata
-  /// - `@handle` / `/c/` / `/user/` need a key → [YoutubeChannelResolveResult.needsApiKey]
+  /// - `@handle` / `/c/` / `/user/` / vanity: best-effort public page scrape for a
+  ///   UC id; on failure → [YoutubeChannelResolveResult.needsApiKey] (paste UC id)
   Future<YoutubeChannelResolveResult> resolveChannel(
     YoutubeChannelRef ref,
   ) async {
     if (!isConfigured) {
       if (ref.isChannelId) {
         return YoutubeChannelResolveResult(
+          channel: _mockChannelMeta(ref.value),
+        );
+      }
+
+      // Best-effort: scrape public channel page for a UC id (no API quota).
+      // Prefer YOUTUBE_API_KEY — scrape can fail on consent walls / layout changes.
+      final scrapedId = await _scrapePublicChannelId(ref);
+      if (scrapedId != null && scrapedId.isNotEmpty) {
+        final meta = _mockChannelMeta(scrapedId);
+        final handle = ref.kind == YoutubeChannelRefKind.handle
+            ? ref.value
+            : meta.handle;
+        return YoutubeChannelResolveResult(
           channel: YoutubeChannelMeta(
-            id: ref.value,
-            title: 'Linked channel (${ref.value})',
-            uploadsPlaylistId: '',
-            description:
-                'Mock channel meta — pass --dart-define=YOUTUBE_API_KEY=... for live details.',
-            thumbnailUrl:
-                'https://picsum.photos/seed/${ref.value.hashCode}/240/240',
-            handle: '',
+            id: meta.id,
+            title: meta.title,
+            uploadsPlaylistId: meta.uploadsPlaylistId,
+            description: meta.description,
+            thumbnailUrl: meta.thumbnailUrl,
+            handle: handle,
+            customUrl: ref.kind == YoutubeChannelRefKind.handle
+                ? '@${ref.value}'
+                : ref.displayLabel,
             isMock: true,
           ),
         );
       }
-      return YoutubeChannelResolveResult(
+
+      return const YoutubeChannelResolveResult(
         needsApiKey: true,
         message:
-            'YOUTUBE_API_KEY missing — @handle /c/ /user/ URLs need the API. '
-            'Pass --dart-define=YOUTUBE_API_KEY=... or paste a /channel/UC… URL.',
+            'YOUTUBE_API_KEY missing — @handle /c/ /user/ /vanity need the API '
+            '(or a /channel/UC… paste). '
+            'Pass --dart-define=YOUTUBE_API_KEY=... or open the channel on '
+            'YouTube → Share → copy the /channel/UC… link.',
       );
     }
 
@@ -257,7 +281,8 @@ class YoutubeApiClient {
         case YoutubeChannelRefKind.username:
           meta = await _channelsListOne(forUsername: ref.value);
         case YoutubeChannelRefKind.customUrl:
-          // /c/ slugs often match handle or legacy username; fall back to search.
+        case YoutubeChannelRefKind.vanity:
+          // /c/ and vanity slugs often match handle or legacy username; fall back to search.
           meta = await _channelsListOne(forHandle: ref.value) ??
               await _channelsListOne(forUsername: ref.value) ??
               await _searchChannelByName(ref.value);
@@ -273,6 +298,68 @@ class YoutubeApiClient {
       return YoutubeChannelResolveResult(
         message: 'YouTube channel lookup failed ($e).',
       );
+    }
+  }
+
+  YoutubeChannelMeta _mockChannelMeta(String channelId) {
+    return YoutubeChannelMeta(
+      id: channelId,
+      title: 'Linked channel ($channelId)',
+      uploadsPlaylistId: '',
+      description:
+          'Mock channel meta — pass --dart-define=YOUTUBE_API_KEY=... for live details.',
+      thumbnailUrl: 'https://picsum.photos/seed/${channelId.hashCode}/240/240',
+      handle: '',
+      isMock: true,
+    );
+  }
+
+  /// Best-effort extract of a UC id from the public youtube.com HTML.
+  /// Returns null when the page cannot be fetched or no id is found.
+  Future<String?> _scrapePublicChannelId(YoutubeChannelRef ref) async {
+    final override = _scrapePublicChannelIdOverride;
+    if (override != null) return override(ref);
+
+    try {
+      final pageDio = Dio(
+        BaseOptions(
+          baseUrl: 'https://www.youtube.com',
+          connectTimeout: const Duration(seconds: 8),
+          receiveTimeout: const Duration(seconds: 12),
+          followRedirects: true,
+          maxRedirects: 5,
+          responseType: ResponseType.plain,
+          headers: const {
+            'User-Agent':
+                'Mozilla/5.0 (compatible; MonVlog/1.0; +https://github.com/Magi888/MonVlog)',
+            'Accept-Language': 'en-US,en;q=0.9',
+          },
+          validateStatus: (code) => code != null && code >= 200 && code < 400,
+        ),
+      );
+      final response = await pageDio.get<String>(ref.publicPath);
+      final body = response.data;
+      if (body == null || body.isEmpty) return null;
+
+      // Prefer canonical /channel/UC… links / redirects reflected in HTML.
+      final patterns = <RegExp>[
+        RegExp(r'"channelId"\s*:\s*"(UC[A-Za-z0-9_-]{20,})"'),
+        RegExp(r'"externalId"\s*:\s*"(UC[A-Za-z0-9_-]{20,})"'),
+        RegExp(r'/channel/(UC[A-Za-z0-9_-]{20,})'),
+        RegExp(
+          r'https?://(?:www\.)?youtube\.com/channel/(UC[A-Za-z0-9_-]{20,})',
+        ),
+      ];
+      for (final pattern in patterns) {
+        final match = pattern.firstMatch(body);
+        final id = match?.group(1);
+        if (id != null && YoutubeIdParser.parseChannelId(id) != null) {
+          return id;
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
