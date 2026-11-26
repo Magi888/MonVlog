@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../data/catalog_providers.dart';
 import '../../data/catalog_repository.dart';
@@ -11,6 +13,7 @@ import '../../data/models/shelf.dart';
 import '../../data/models/video_item.dart';
 import '../../data/shelf_categorizer.dart';
 import '../../l10n/app_localizations.dart';
+import '../home/widgets/poster_card.dart';
 
 /// Netflix-style channel page: header + horizontal video / playlist shelves.
 class ChannelBrowseScreen extends ConsumerWidget {
@@ -49,11 +52,14 @@ class ChannelBrowseScreen extends ConsumerWidget {
           snapshot: snapshot,
           fallbackName: fallbackName,
           topInset: top,
+          isTv: FormFactor.isTvLayout(context),
           onBack: () {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/phone');
+              context.go(
+                FormFactor.isTvLayout(context) ? '/tv' : '/phone',
+              );
             }
           },
           onRetry: () => ref.invalidate(channelCatalogProvider(channelId)),
@@ -68,6 +74,7 @@ class _ChannelBody extends StatelessWidget {
     required this.snapshot,
     required this.fallbackName,
     required this.topInset,
+    required this.isTv,
     required this.onBack,
     required this.onRetry,
   });
@@ -75,6 +82,7 @@ class _ChannelBody extends StatelessWidget {
   final ChannelCatalogSnapshot snapshot;
   final String fallbackName;
   final double topInset;
+  final bool isTv;
   final VoidCallback onBack;
   final VoidCallback onRetry;
 
@@ -87,55 +95,78 @@ class _ChannelBody extends StatelessWidget {
         : (fallbackName.isNotEmpty ? fallbackName : l10n.channel);
     final source = snapshot.isMock ? l10n.mockCatalog : l10n.liveYoutube;
     final category = ShelfTypes.localizedTitle(channel.category, l10n);
+    final hPad = isTv ? 36.0 : 16.0;
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverToBoxAdapter(
-          child: _ChannelHero(
-            topInset: topInset,
-            name: name,
-            handle: channel.handle,
-            category: category,
-            source: source,
-            thumbnailUrl: snapshot.thumbnailUrl,
-            description: snapshot.description,
-            onBack: onBack,
-            onRetry: snapshot.isMock ? onRetry : null,
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.escape): DismissIntent(),
+        SingleActivator(LogicalKeyboardKey.goBack): DismissIntent(),
+        SingleActivator(LogicalKeyboardKey.browserBack): DismissIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          DismissIntent: CallbackAction<DismissIntent>(
+            onInvoke: (_) {
+              onBack();
+              return null;
+            },
           ),
-        ),
-        if (snapshot.message.isNotEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text(
-                snapshot.message,
-                style: GoogleFonts.manrope(
-                  color: MonVlogTheme.muted,
-                  fontSize: 12,
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: _ChannelHero(
+                topInset: topInset,
+                name: name,
+                handle: channel.handle,
+                category: category,
+                source: source,
+                thumbnailUrl: snapshot.thumbnailUrl,
+                description: snapshot.description,
+                isTv: isTv,
+                onBack: onBack,
+                onRetry: snapshot.isMock ? onRetry : null,
+              ),
+            ),
+            if (snapshot.message.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 8),
+                  child: Text(
+                    snapshot.message,
+                    style: GoogleFonts.manrope(
+                      color: MonVlogTheme.muted,
+                      fontSize: isTv ? 14 : 12,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        if (snapshot.shelves.isEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                l10n.channelEmpty,
-                style: GoogleFonts.manrope(color: MonVlogTheme.muted),
+            if (snapshot.shelves.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    l10n.channelEmpty,
+                    style: GoogleFonts.manrope(color: MonVlogTheme.muted),
+                  ),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _ChannelShelf(
+                    shelf: snapshot.shelves[index],
+                    isTv: isTv,
+                    autofocusFirst: isTv && index == 0,
+                  ),
+                  childCount: snapshot.shelves.length,
+                ),
               ),
-            ),
-          )
-        else
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _ChannelShelf(shelf: snapshot.shelves[index]),
-              childCount: snapshot.shelves.length,
-            ),
-          ),
-        const SliverToBoxAdapter(child: SizedBox(height: 32)),
-      ],
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -149,6 +180,7 @@ class _ChannelHero extends StatelessWidget {
     required this.source,
     required this.thumbnailUrl,
     required this.description,
+    required this.isTv,
     required this.onBack,
     this.onRetry,
   });
@@ -160,17 +192,19 @@ class _ChannelHero extends StatelessWidget {
   final String source;
   final String thumbnailUrl;
   final String description;
+  final bool isTv;
   final VoidCallback onBack;
   final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final hPad = isTv ? 36.0 : 16.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          height: 200 + topInset,
+          height: (isTv ? 260 : 200) + topInset,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -217,8 +251,9 @@ class _ChannelHero extends StatelessWidget {
               ),
               Positioned(
                 top: topInset + 4,
-                left: 4,
+                left: isTv ? 24 : 4,
                 child: IconButton(
+                  autofocus: false,
                   onPressed: onBack,
                   icon: const Icon(
                     Icons.arrow_back_ios_new_rounded,
@@ -227,8 +262,8 @@ class _ChannelHero extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 16,
-                right: 16,
+                left: hPad,
+                right: hPad,
                 bottom: 16,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,7 +275,7 @@ class _ChannelHero extends StatelessWidget {
                       style: GoogleFonts.manrope(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                        fontSize: 26,
+                        fontSize: isTv ? 36 : 26,
                         height: 1.1,
                       ),
                     ),
@@ -255,14 +290,14 @@ class _ChannelHero extends StatelessWidget {
                             handle.startsWith('@') ? handle : '@$handle',
                             style: GoogleFonts.manrope(
                               color: Colors.white70,
-                              fontSize: 13,
+                              fontSize: isTv ? 16 : 13,
                             ),
                           ),
                         Text(
                           category,
                           style: GoogleFonts.manrope(
                             color: MonVlogTheme.coral,
-                            fontSize: 12,
+                            fontSize: isTv ? 14 : 12,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -299,14 +334,14 @@ class _ChannelHero extends StatelessWidget {
         ),
         if (description.trim().isNotEmpty)
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: EdgeInsets.fromLTRB(hPad, 12, hPad, 8),
             child: Text(
               description.trim(),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.manrope(
                 color: MonVlogTheme.muted,
-                fontSize: 13,
+                fontSize: isTv ? 15 : 13,
                 height: 1.4,
               ),
             ),
@@ -317,19 +352,64 @@ class _ChannelHero extends StatelessWidget {
 }
 
 class _ChannelShelf extends StatelessWidget {
-  const _ChannelShelf({required this.shelf});
+  const _ChannelShelf({
+    required this.shelf,
+    required this.isTv,
+    this.autofocusFirst = false,
+  });
 
   final Shelf shelf;
+  final bool isTv;
+  final bool autofocusFirst;
 
   @override
   Widget build(BuildContext context) {
+    final hPad = isTv ? 36.0 : 16.0;
+    // TV reuses focusable [PosterCard] (D-pad / Select). Phone keeps compact posters.
+    if (isTv) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 12),
+              child: Text(
+                shelf.title,
+                style: GoogleFonts.manrope(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 240,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: hPad),
+                itemCount: shelf.items.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, index) {
+                  return PosterCard(
+                    item: shelf.items[index],
+                    autofocus: autofocusFirst && index == 0,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+            padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 10),
             child: Text(
               shelf.title,
               style: GoogleFonts.manrope(
@@ -343,7 +423,7 @@ class _ChannelShelf extends StatelessWidget {
             height: 148,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: hPad),
               itemCount: shelf.items.length,
               separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, index) {

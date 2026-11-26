@@ -24,7 +24,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 | **Admin catalog** | `/admin/catalog` | Link YouTube channel/playlist by URL (admin only); optional name search |
 | **Channel browse** | `/channel/:channelId` | Open a curated channel — uploads + linked playlists (Netflix shelves) |
 | **In-app player** | `/play` | YouTube IFrame playback (`youtube_player_flutter`); Play on detail opens this. **Open in YouTube** stays as secondary. |
-| Splash | `/splash` | Brand splash → entry login |
+| Splash | `/splash` | Brand splash → **`/tv`** on Android TV / leanback (or 1280×720+ landscape); phone → entry login |
 
 YouTube Data API and RevenueCat stay **stubbed/mocked** for the visual demo — **no API keys required**.
 Without `YOUTUBE_API_KEY`, admin can still link `/channel/UC…` and playlist IDs (mock metadata). `@handle` / vanity / `/c/` / `/user/` prefer `--dart-define=YOUTUBE_API_KEY=...` (recommended); without a key the app may try a best-effort public-page scrape for a UC id, then asks to paste `/channel/UC…` if that fails. Name search falls back to mock hits with an on-screen banner.

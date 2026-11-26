@@ -68,4 +68,63 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('New from creators'), findsOneWidget);
   });
+
+  testWidgets('TV rail Creators and Settings are reachable', (tester) async {
+    tester.view.physicalSize = const Size(1280, 720);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ...localeOverrides(),
+          homeCatalogProvider.overrideWith((ref) async {
+            return CatalogSnapshot(
+              shelves: MockCatalog.shelves,
+              channels: const <CuratedChannel>[],
+              source: CatalogSource.mock,
+            );
+          }),
+          curatedCatalogProvider.overrideWith((ref) async {
+            return const CuratedCatalogConfig(
+              version: 1,
+              channels: [
+                CuratedChannel(
+                  channelId: 'UCQXxhQHalYjwMictp1lUbtg',
+                  displayName: 'Gremix',
+                  category: 'daily',
+                  verified: true,
+                  handle: '@GremixBn',
+                ),
+              ],
+            );
+          }),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: MonVlogTheme.dark,
+          home: const TvShell(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Creators'));
+    await tester.pumpAndSettle();
+    expect(find.text('Gremix'), findsOneWidget);
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Language'), findsWidgets);
+    expect(find.text('Admin sign-in'), findsOneWidget);
+  });
 }

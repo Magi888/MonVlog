@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -132,7 +133,7 @@ class _Segmented extends StatelessWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
+class _Chip extends StatefulWidget {
   const _Chip({
     required this.label,
     required this.selected,
@@ -144,23 +145,50 @@ class _Chip extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_Chip> createState() => _ChipState();
+}
+
+class _ChipState extends State<_Chip> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: selected
-          ? MonVlogTheme.brandRed.withValues(alpha: 0.85)
-          : Colors.transparent,
-      borderRadius: BorderRadius.circular(9),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(9),
-        child: Padding(
+    return FocusableActionDetector(
+      onShowFocusHighlight: (f) => setState(() => _focused = f),
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.select): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            widget.onTap();
+            return null;
+          },
+        ),
+      },
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: widget.selected
+                ? MonVlogTheme.brandRed.withValues(alpha: 0.85)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(
+              color: _focused ? MonVlogTheme.focusRing : Colors.transparent,
+              width: 2,
+            ),
+          ),
           child: Text(
-            label,
+            widget.label,
             style: GoogleFonts.manrope(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: selected ? Colors.white : MonVlogTheme.onBg,
+              color: widget.selected ? Colors.white : MonVlogTheme.onBg,
             ),
           ),
         ),
