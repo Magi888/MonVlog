@@ -1,7 +1,7 @@
 name: monvlog
 description: "MonVlog — Mongolian YouTube vlogs (phone community + Netflix TV)"
 publish_to: 'none'
-version: 1.0.2+3
+version: 1.0.2+4
 
 environment:
   sdk: ^3.9.2
@@ -46,7 +46,8 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  # Launcher-only source: same MonVlog mark as monvlog-logo.png, wordmark ~14% smaller.
+  # Launcher-only source: same MonVlog mark as monvlog-logo.png, wordmark ~14% smaller;
+  # white strokes thickened + edge-hardened for small mipmap clarity (size unchanged).
   image_path: assets/brand/monvlog-logo-launcher.png
   # Samsung / One UI uses roundIcon; keep both adaptive + legacy round mipmaps.
   adaptive_icon_background: "#E71616"
