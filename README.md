@@ -137,7 +137,7 @@ lib/
 assets/
   promo/europe-tour-hero.jpg
   brand/monvlog-logo.png          # in-app mark
-  brand/monvlog-logo-launcher.png # phone/TV launcher + adaptive source (slightly smaller wordmark)
+  brand/monvlog-logo-launcher.png # phone/TV launcher source (~86% wordmark, sharpened strokes)
   brand/monvlog-icon-foreground.png  # adaptive foreground (transparent white mark)
   brand/monvlog-logo-box.png      # splash wordmark
   brand/monvlog-splash-mark.png   # native splash (logo + tagline)
