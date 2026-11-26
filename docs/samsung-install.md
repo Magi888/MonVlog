@@ -58,14 +58,15 @@ flutter build apk --release \
 
 ```sh
 adb devices
-# Prefer a clean reinstall if you previously saw "MVP shell" without a bottom menu:
+# Prefer a clean reinstall if you previously saw "MVP shell" without a bottom menu,
+# or if the home-screen / app-drawer icon is still the blue Flutter logo:
 adb uninstall com.monvlog.monvlog
 adb install build/app/outputs/flutter-apk/app-release.apk
-# Or overwrite in place:
-# adb install -r build/app/outputs/flutter-apk/app-release.apk
+# Do NOT use `adb install -r` when fixing the launcher icon — Samsung One UI
+# often caches the old icon across replace-installs. Uninstall first, then install.
 ```
 
-5. Open **MonVlog** from the app drawer. After splash → **Continue as guest**, you land on the phone shell (`/phone`) with the bottom **Community / Watch / Profile** menu. If you still see **MVP shell · Mock catalog** with no bottom bar, the old APK is still installed — uninstall and reinstall (steps above).
+5. Open **MonVlog** from the app drawer. The launcher icon should be the red **MONVLOG** mark (not the blue Flutter logo). After splash → **Continue as guest**, you land on the phone shell (`/phone`) with the bottom **Community / Watch / Profile** menu. If you still see **MVP shell · Mock catalog** with no bottom bar, or the Flutter logo, the old APK (or its cached icon) is still installed — uninstall and reinstall (steps above). If the icon is still wrong after a clean reinstall, reboot the phone once so One UI drops the launcher cache.
 
 **“Install blocked” / unknown sources:** on newer One UI, ADB installs are usually allowed when USB debugging is on. If you copy the APK via file share instead, enable install from that source when Android asks.
 
@@ -149,6 +150,7 @@ If `leanback` were `required="true"`, Play would hide the app from phones — ke
 | Phone install OK, TV rejects | TV may be Tizen-only (no Google Play) — APK will not run |
 | Play says device not compatible | Check minSdk / leanback flags; Internal track must include the tester account |
 | Wrong UI (phone chrome on TV) | Open `/tv` or use a wide display; splash uses viewport form-factor |
+| Home icon still blue Flutter logo | Uninstall `com.monvlog.monvlog`, reinstall the new APK (avoid `adb install -r`); reboot phone if One UI still shows the cached icon |
 
 ---
 
@@ -162,7 +164,7 @@ flutter pub get
 ./scripts/build-android-release.sh
 ```
 
-**Samsung phone (clean reinstall if menu missing):**
+**Samsung phone (clean reinstall if menu missing or launcher icon still Flutter):**
 
 ```sh
 adb devices

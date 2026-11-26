@@ -1,7 +1,7 @@
 name: monvlog
 description: "MonVlog — Mongolian YouTube vlogs (phone community + Netflix TV)"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.9.2
@@ -47,12 +47,18 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: assets/brand/monvlog-logo.png
+  # Samsung / One UI uses roundIcon; keep both adaptive + legacy round mipmaps.
   adaptive_icon_background: "#E71616"
   # Transparent white mark; inset supplies adaptive safe zone (avoid double padding).
   adaptive_icon_foreground: assets/brand/monvlog-icon-foreground.png
   adaptive_icon_foreground_inset: 16
   remove_alpha_ios: true
   background_color_ios: "#E71616"
+  web:
+    generate: true
+    image_path: assets/brand/monvlog-logo.png
+    background_color: "#E71616"
+    theme_color: "#E71616"
 
 flutter_native_splash:
   color: "#E71616"
