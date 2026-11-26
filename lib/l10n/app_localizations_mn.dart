@@ -342,4 +342,56 @@ class AppLocalizationsMn extends AppLocalizations {
 
   @override
   String get authInvalidCredentials => 'Имэйл эсвэл нууц үг буруу.';
+
+  @override
+  String get unlockWithPasskey => 'Passkey / биометрээр нээх';
+
+  @override
+  String get usePasswordInstead => 'Нууц үгээр нэвтрэх';
+
+  @override
+  String get passkeyOfferTitle => 'Дараагийн удаа passkey ашиглах уу?';
+
+  @override
+  String get passkeyOfferBody =>
+      'Энэ нэвтрэлтийн дараа админыг хурууны хээ, нүүр эсвэл төхөөрөмжийн PIN-ээр нээнэ. Нууц үг нөөцөд үлдэнэ.';
+
+  @override
+  String get passkeyOfferEnable => 'Идэвхжүүлэх';
+
+  @override
+  String get passkeyOfferNotNow => 'Одоо биш';
+
+  @override
+  String get passkeyPromptEnable =>
+      'Админ passkey идэвхжүүлэхийн тулд баталгаажуулна уу';
+
+  @override
+  String get passkeyPromptUnlock => 'MonVlog админыг нээх';
+
+  @override
+  String get passkeyEnabledSnack => 'Passkey / биометрик нэвтрэлт идэвхжлээ';
+
+  @override
+  String get authBiometricNotEnabled =>
+      'Passkey нэвтрэлт хараахан идэвхжээгүй — эхлээд нууц үгээр нэвтэрнэ үү.';
+
+  @override
+  String get authBiometricUnavailable =>
+      'Энэ төхөөрөмж биометрик нэвтрэлтийг дэмжихгүй. Нууц үг ашиглана уу.';
+
+  @override
+  String get authBiometricFailed =>
+      'Биометрик цуцлагдсан эсвэл амжилтгүй. Нууц үгээр оролдоно уу.';
+
+  @override
+  String get authBiometricNotAdmin =>
+      'Passkey идэвхжүүлэхийн өмнө нууц үгээр нэвтэрнэ үү.';
+
+  @override
+  String get biometricUnlockToggle => 'Passkey / биометрик нэвтрэлт';
+
+  @override
+  String get biometricUnlockSubtitle =>
+      'Гарсны дараа админыг хурууны хээ, нүүр эсвэл PIN-ээр нээх';
 }

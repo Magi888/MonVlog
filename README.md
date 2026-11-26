@@ -20,7 +20,7 @@ UI on Android TV / Google TV (Samsung living-room path).
 | **Phone Watch** | Watch tab / `/phone/watch` | Netflix-style dark horizontal rails (mock catalog) |
 | **Phone Profile** | Profile tab / `/phone/profile` | Guest account + admin sign-in + **mn/en language switch** (bottom menu always visible) |
 | **TV / Samsung living room** | `/tv` (legacy `/home` alias) | Left rail + focusable shelves; **no** phone bottom bar. On phone viewports `/home` redirects to `/phone` so the bottom menu (Community / Watch / Profile) always shows. |
-| **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login or **Continue as guest** |
+| **Entry / login** | `/login` or `/admin/login` | Branded MonVlog gate: admin Login (password + optional biometric unlock) or **Continue as guest** |
 | **Admin catalog** | `/admin/catalog` | Search YouTube channels/playlists → add to curated catalog (admin only) |
 | Splash | `/splash` | Brand splash → entry login |
 
@@ -113,6 +113,7 @@ flutter run -d chrome \
 
 - App opens on the branded **Login** screen after splash. Sign in as admin, or tap **Continue as guest**.
 - Admin login goes to `/admin/catalog`. Guests go to phone **Community** (`/phone`) or TV home (`/home`).
+- After the first successful password login on a phone, MonVlog offers **passkey / biometric unlock** (`local_auth` + secure storage). Next visits can unlock with fingerprint, face, or device PIN; **password stays as fallback**. Toggle later under **Profile** while signed in as admin. (Local-device unlock — not server WebAuthn.)
 - You can also open Admin from the phone top-right icon, TV **Settings → Admin sign-in**, or `/admin/login`.
 - Only the admin session can open `/admin/catalog` (role gate). Guests browse shelves read-only.
 - Added channels/playlists merge into local JSON overrides (`SharedPreferences`) on top of `assets/config/curated_channels.json` (same shape as optional remote `CURATED_CHANNELS_URL`).
@@ -123,7 +124,7 @@ flutter run -d chrome \
 ```
 lib/
   app/                 # theme, router, form-factor
-  auth/                # admin login, seed email, secure password bootstrap
+  auth/                # admin login, seed email, secure password + local biometric unlock
   features/
     admin/             # login + catalog search/add UI
     phone/             # Community (Wix-like) + Watch rails + shell

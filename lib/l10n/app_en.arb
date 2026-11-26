@@ -186,5 +186,20 @@
   },
   "authOnlySeededAdmin": "Only the seeded admin account can sign in.",
   "authPasswordRequired": "Password is required.",
-  "authInvalidCredentials": "Invalid email or password."
+  "authInvalidCredentials": "Invalid email or password.",
+  "unlockWithPasskey": "Unlock with passkey / biometric",
+  "usePasswordInstead": "Use password instead",
+  "passkeyOfferTitle": "Use passkey next time?",
+  "passkeyOfferBody": "After this sign-in, unlock admin with fingerprint, face, or your device PIN. Password stays available as a fallback.",
+  "passkeyOfferEnable": "Enable",
+  "passkeyOfferNotNow": "Not now",
+  "passkeyPromptEnable": "Confirm it’s you to enable admin passkey unlock",
+  "passkeyPromptUnlock": "Unlock MonVlog admin",
+  "passkeyEnabledSnack": "Passkey / biometric unlock enabled",
+  "authBiometricNotEnabled": "Passkey unlock is not enabled yet — sign in with password first.",
+  "authBiometricUnavailable": "This device can’t use biometric unlock. Use password.",
+  "authBiometricFailed": "Biometric unlock canceled or failed. Try password.",
+  "authBiometricNotAdmin": "Sign in with password before enabling passkey unlock.",
+  "biometricUnlockToggle": "Passkey / biometric unlock",
+  "biometricUnlockSubtitle": "Unlock admin after logout with fingerprint, face, or device PIN"
 }

@@ -1,27 +1,37 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'admin_biometric_gate.dart';
 import 'admin_config.dart';
+import 'admin_secure_store.dart';
 
 /// Admin login + role gate. Compile-time password (default or dart-define
-/// override) is hashed into flutter_secure_storage for verification.
+/// override) is hashed into secure storage for verification.
+///
+/// Optional local-device biometric unlock: after one successful password login
+/// the admin can enable [local_auth] re-entry; password remains the fallback.
 class AdminAuthService {
   AdminAuthService({
-    FlutterSecureStorage? secureStorage,
+    AdminSecureStore? secureStore,
     SharedPreferences? prefs,
-  })  : _secure = secureStorage ?? const FlutterSecureStorage(),
-        _prefsOverride = prefs;
+    AdminBiometricGate? biometricGate,
+  })  : _secure = secureStore ?? FlutterAdminSecureStore(),
+        _prefsOverride = prefs,
+        _biometric = biometricGate ?? LocalAuthBiometricGate();
 
   static const _passwordHashKey = 'admin_password_sha256';
   static const _sessionEmailKey = 'admin_session_email';
   static const _sessionActiveKey = 'admin_session_active';
+  static const _biometricEnabledKey = 'admin_biometric_unlock_enabled';
 
-  final FlutterSecureStorage _secure;
+  final AdminSecureStore _secure;
   final SharedPreferences? _prefsOverride;
+  final AdminBiometricGate _biometric;
   SharedPreferences? _prefs;
+
+  AdminBiometricGate get biometricGate => _biometric;
 
   Future<SharedPreferences> _prefsOrGet() async {
     return _prefsOverride ?? (_prefs ??= await SharedPreferences.getInstance());
@@ -67,6 +77,25 @@ class AdminAuthService {
     return AdminConfig.hasPasswordDefine;
   }
 
+  /// Device supports biometric / credential unlock UI.
+  Future<bool> get canUseDeviceUnlock async => _biometric.canAuthenticate;
+
+  /// Admin previously opted into local unlock after a password login.
+  Future<bool> get isBiometricUnlockEnabled async {
+    try {
+      final v = await _secure.read(key: _biometricEnabledKey);
+      return v == '1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Ready to show “Unlock with passkey / biometric” on the login screen.
+  Future<bool> get canBiometricUnlock async {
+    if (!await isBiometricUnlockEnabled) return false;
+    return canUseDeviceUnlock;
+  }
+
   Future<AdminSession> currentSession() async {
     final prefs = await _prefsOrGet();
     final active = prefs.getBool(_sessionActiveKey) ?? false;
@@ -99,16 +128,82 @@ class AdminAuthService {
     // Keep storage in sync if define was used before first bootstrap completed.
     await bootstrapFromDartDefine();
     if (!await hasStoredPassword && AdminConfig.hasPasswordDefine) {
-      await _secure.write(
-        key: _passwordHashKey,
-        value: hashPassword(AdminConfig.passwordFromDefine),
+      try {
+        await _secure.write(
+          key: _passwordHashKey,
+          value: hashPassword(AdminConfig.passwordFromDefine),
+        );
+      } catch (_) {
+        // Tests / missing plugin — session still activates below.
+      }
+    }
+
+    await _activateSession();
+
+    return AdminAuthResult.success(
+      AdminSession(email: AdminConfig.seedEmail, isAdmin: true),
+    );
+  }
+
+  /// Prompt device unlock, then mark biometric re-entry enabled.
+  ///
+  /// Call after a successful password login while the admin session is active.
+  Future<AdminAuthResult> enableBiometricUnlock({
+    required String localizedReason,
+  }) async {
+    final session = await currentSession();
+    if (!session.isAdmin) {
+      return const AdminAuthResult.failure(AdminAuthResult.biometricNotAdmin);
+    }
+    if (!await canUseDeviceUnlock) {
+      return const AdminAuthResult.failure(
+        AdminAuthResult.biometricUnavailable,
       );
     }
 
-    final prefs = await _prefsOrGet();
-    await prefs.setBool(_sessionActiveKey, true);
-    await prefs.setString(_sessionEmailKey, AdminConfig.seedEmail);
+    final ok = await _biometric.authenticate(localizedReason: localizedReason);
+    if (!ok) {
+      return const AdminAuthResult.failure(AdminAuthResult.biometricFailed);
+    }
 
+    try {
+      await _secure.write(key: _biometricEnabledKey, value: '1');
+    } catch (_) {
+      return const AdminAuthResult.failure(
+        AdminAuthResult.biometricUnavailable,
+      );
+    }
+
+    return AdminAuthResult.success(session);
+  }
+
+  Future<void> disableBiometricUnlock() async {
+    try {
+      await _secure.write(key: _biometricEnabledKey, value: '0');
+    } catch (_) {
+      // Best-effort — preference may already be missing.
+    }
+  }
+
+  /// Restore the admin session after a successful device biometric / PIN.
+  Future<AdminAuthResult> unlockWithBiometric({
+    required String localizedReason,
+  }) async {
+    if (!await isBiometricUnlockEnabled) {
+      return const AdminAuthResult.failure(AdminAuthResult.biometricNotEnabled);
+    }
+    if (!await canUseDeviceUnlock) {
+      return const AdminAuthResult.failure(
+        AdminAuthResult.biometricUnavailable,
+      );
+    }
+
+    final ok = await _biometric.authenticate(localizedReason: localizedReason);
+    if (!ok) {
+      return const AdminAuthResult.failure(AdminAuthResult.biometricFailed);
+    }
+
+    await _activateSession();
     return AdminAuthResult.success(
       AdminSession(email: AdminConfig.seedEmail, isAdmin: true),
     );
@@ -129,10 +224,17 @@ class AdminAuthService {
     return candidateHash == hashPassword(AdminConfig.passwordFromDefine);
   }
 
+  Future<void> _activateSession() async {
+    final prefs = await _prefsOrGet();
+    await prefs.setBool(_sessionActiveKey, true);
+    await prefs.setString(_sessionEmailKey, AdminConfig.seedEmail);
+  }
+
   Future<void> logout() async {
     final prefs = await _prefsOrGet();
     await prefs.setBool(_sessionActiveKey, false);
     await prefs.remove(_sessionEmailKey);
+    // Keep biometric opt-in so the next visit can unlock without password.
   }
 }
 
@@ -166,6 +268,10 @@ class AdminAuthResult {
   static const onlySeededAdmin = 'only_seeded_admin';
   static const passwordRequired = 'password_required';
   static const invalidCredentials = 'invalid_credentials';
+  static const biometricNotEnabled = 'biometric_not_enabled';
+  static const biometricUnavailable = 'biometric_unavailable';
+  static const biometricFailed = 'biometric_failed';
+  static const biometricNotAdmin = 'biometric_not_admin';
 
   final bool success;
   final AdminSession? session;

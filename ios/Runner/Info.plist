@@ -47,5 +47,7 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Unlock MonVlog admin after the first password sign-in.</string>
 	</dict>
 </plist>

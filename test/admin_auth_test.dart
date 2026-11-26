@@ -1,79 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:monvlog/auth/admin_auth_service.dart';
+import 'package:monvlog/auth/admin_biometric_gate.dart';
 import 'package:monvlog/auth/admin_config.dart';
+import 'package:monvlog/auth/admin_secure_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// In-memory secure storage stand-in for unit tests (no platform channels).
-class _MemorySecureStorage {
-  final map = <String, String>{};
-
-  Future<String?> read({required String key}) async => map[key];
-
-  Future<void> write({required String key, required String value}) async {
-    map[key] = value;
-  }
-}
-
-/// Test-double AdminAuthService that uses memory maps instead of plugins.
-class _TestAdminAuth {
-  _TestAdminAuth() {
-    SharedPreferences.setMockInitialValues({});
-  }
-
-  final _secure = _MemorySecureStorage();
-  SharedPreferences? _prefs;
-
-  Future<SharedPreferences> get _p async =>
-      _prefs ??= await SharedPreferences.getInstance();
-
-  static const _passwordHashKey = 'admin_password_sha256';
-  static const _sessionEmailKey = 'admin_session_email';
-  static const _sessionActiveKey = 'admin_session_active';
-
-  Future<void> bootstrap(String password) async {
-    final existing = await _secure.read(key: _passwordHashKey);
-    if (existing != null && existing.isNotEmpty) return;
-    await _secure.write(
-      key: _passwordHashKey,
-      value: AdminAuthService.hashPassword(password),
-    );
-  }
-
-  Future<AdminAuthResult> login({
-    required String email,
-    required String password,
-  }) async {
-    if (!AdminConfig.isAdminEmail(email)) {
-      return const AdminAuthResult.failure(AdminAuthResult.onlySeededAdmin);
-    }
-    final stored = await _secure.read(key: _passwordHashKey);
-    final hash = AdminAuthService.hashPassword(password);
-    if (stored == null || stored != hash) {
-      return const AdminAuthResult.failure(AdminAuthResult.invalidCredentials);
-    }
-    final prefs = await _p;
-    await prefs.setBool(_sessionActiveKey, true);
-    await prefs.setString(_sessionEmailKey, AdminConfig.seedEmail);
-    return AdminAuthResult.success(
-      AdminSession(email: AdminConfig.seedEmail, isAdmin: true),
-    );
-  }
-
-  Future<AdminSession> currentSession() async {
-    final prefs = await _p;
-    final active = prefs.getBool(_sessionActiveKey) ?? false;
-    final email = prefs.getString(_sessionEmailKey) ?? '';
-    if (!active || !AdminConfig.isAdminEmail(email)) {
-      return const AdminSession.guest();
-    }
-    return AdminSession(email: email, isAdmin: true);
-  }
-
-  Future<void> logout() async {
-    final prefs = await _p;
-    await prefs.setBool(_sessionActiveKey, false);
-    await prefs.remove(_sessionEmailKey);
-  }
+AdminAuthService buildAuth({
+  FakeBiometricGate? gate,
+  MemoryAdminSecureStore? store,
+}) {
+  SharedPreferences.setMockInitialValues({});
+  return AdminAuthService(
+    secureStore: store ?? MemoryAdminSecureStore(),
+    biometricGate: gate ?? FakeBiometricGate(),
+  );
 }
 
 void main() {
@@ -105,22 +45,22 @@ void main() {
 
   group('admin login role gate', () {
     test('rejects non-admin email', () async {
-      final auth = _TestAdminAuth();
-      await auth.bootstrap('test-pass');
+      final auth = buildAuth();
+      await auth.bootstrapFromDartDefine();
       final result = await auth.login(
         email: 'other@example.com',
-        password: 'test-pass',
+        password: AdminConfig.passwordFromDefine,
       );
       expect(result.success, isFalse);
       expect(result.message, AdminAuthResult.onlySeededAdmin);
     });
 
     test('accepts seeded admin with matching password', () async {
-      final auth = _TestAdminAuth();
-      await auth.bootstrap('test-pass');
+      final auth = buildAuth();
+      await auth.bootstrapFromDartDefine();
       final result = await auth.login(
         email: 'maag888@gmail.com',
-        password: 'test-pass',
+        password: AdminConfig.passwordFromDefine,
       );
       expect(result.success, isTrue);
       expect(result.session?.isAdmin, isTrue);
@@ -129,8 +69,8 @@ void main() {
     });
 
     test('rejects wrong password', () async {
-      final auth = _TestAdminAuth();
-      await auth.bootstrap('test-pass');
+      final auth = buildAuth();
+      await auth.bootstrapFromDartDefine();
       final result = await auth.login(
         email: 'maag888@gmail.com',
         password: 'wrong',
@@ -138,13 +78,107 @@ void main() {
       expect(result.success, isFalse);
     });
 
-    test('logout returns guest', () async {
-      final auth = _TestAdminAuth();
-      await auth.bootstrap('test-pass');
-      await auth.login(email: 'maag888@gmail.com', password: 'test-pass');
+    test('logout returns guest but keeps biometric opt-in', () async {
+      final gate = FakeBiometricGate();
+      final auth = buildAuth(gate: gate);
+      await auth.bootstrapFromDartDefine();
+      await auth.login(
+        email: 'maag888@gmail.com',
+        password: AdminConfig.passwordFromDefine,
+      );
+      final enabled = await auth.enableBiometricUnlock(
+        localizedReason: 'enable',
+      );
+      expect(enabled.success, isTrue);
+      expect(await auth.isBiometricUnlockEnabled, isTrue);
+
       await auth.logout();
       final session = await auth.currentSession();
       expect(session.isGuest, isTrue);
+      expect(await auth.isBiometricUnlockEnabled, isTrue);
+      expect(await auth.canBiometricUnlock, isTrue);
+    });
+  });
+
+  group('admin biometric unlock', () {
+    test('enable requires active admin session', () async {
+      final auth = buildAuth();
+      final result = await auth.enableBiometricUnlock(
+        localizedReason: 'enable',
+      );
+      expect(result.success, isFalse);
+      expect(result.message, AdminAuthResult.biometricNotAdmin);
+    });
+
+    test('unlock restores session after biometric success', () async {
+      final gate = FakeBiometricGate();
+      final auth = buildAuth(gate: gate);
+      await auth.bootstrapFromDartDefine();
+      await auth.login(
+        email: 'maag888@gmail.com',
+        password: AdminConfig.passwordFromDefine,
+      );
+      await auth.enableBiometricUnlock(localizedReason: 'enable');
+      await auth.logout();
+
+      final unlocked = await auth.unlockWithBiometric(
+        localizedReason: 'unlock',
+      );
+      expect(unlocked.success, isTrue);
+      expect((await auth.currentSession()).isAdmin, isTrue);
+      expect(gate.authenticateCalls, greaterThanOrEqualTo(2));
+      expect(gate.lastReason, 'unlock');
+    });
+
+    test('unlock fails when biometric prompt is canceled', () async {
+      final gate = FakeBiometricGate(authenticateResult: true);
+      final auth = buildAuth(gate: gate);
+      await auth.bootstrapFromDartDefine();
+      await auth.login(
+        email: 'maag888@gmail.com',
+        password: AdminConfig.passwordFromDefine,
+      );
+      await auth.enableBiometricUnlock(localizedReason: 'enable');
+      await auth.logout();
+
+      gate.authenticateResult = false;
+      final unlocked = await auth.unlockWithBiometric(
+        localizedReason: 'unlock',
+      );
+      expect(unlocked.success, isFalse);
+      expect(unlocked.message, AdminAuthResult.biometricFailed);
+      expect((await auth.currentSession()).isGuest, isTrue);
+    });
+
+    test('password remains available as fallback', () async {
+      final gate = FakeBiometricGate(authenticateResult: false);
+      final auth = buildAuth(gate: gate);
+      await auth.bootstrapFromDartDefine();
+      // Even with biometrics failing, password login still works.
+      final result = await auth.login(
+        email: 'maag888@gmail.com',
+        password: AdminConfig.passwordFromDefine,
+      );
+      expect(result.success, isTrue);
+    });
+
+    test('disableBiometricUnlock blocks later unlock', () async {
+      final gate = FakeBiometricGate();
+      final auth = buildAuth(gate: gate);
+      await auth.bootstrapFromDartDefine();
+      await auth.login(
+        email: 'maag888@gmail.com',
+        password: AdminConfig.passwordFromDefine,
+      );
+      await auth.enableBiometricUnlock(localizedReason: 'enable');
+      await auth.disableBiometricUnlock();
+      await auth.logout();
+
+      final unlocked = await auth.unlockWithBiometric(
+        localizedReason: 'unlock',
+      );
+      expect(unlocked.success, isFalse);
+      expect(unlocked.message, AdminAuthResult.biometricNotEnabled);
     });
   });
 }

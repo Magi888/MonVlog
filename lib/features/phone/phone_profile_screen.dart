@@ -11,11 +11,63 @@ import '../../locale/language_switch.dart';
 
 /// Guest / account tab — Wix Spaces “My Profile” equivalent for phone.
 /// Guests and admins both get the language switch here.
-class PhoneProfileScreen extends ConsumerWidget {
+class PhoneProfileScreen extends ConsumerStatefulWidget {
   const PhoneProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PhoneProfileScreen> createState() => _PhoneProfileScreenState();
+}
+
+class _PhoneProfileScreenState extends ConsumerState<PhoneProfileScreen> {
+  var _biometricSupported = false;
+  var _biometricEnabled = false;
+  var _biometricBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshBiometric());
+  }
+
+  Future<void> _refreshBiometric() async {
+    final auth = ref.read(adminAuthServiceProvider);
+    final supported = await auth.canUseDeviceUnlock;
+    final enabled = await auth.isBiometricUnlockEnabled;
+    if (!mounted) return;
+    setState(() {
+      _biometricSupported = supported;
+      _biometricEnabled = enabled;
+    });
+  }
+
+  Future<void> _toggleBiometric(bool enable) async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _biometricBusy = true);
+    final notifier = ref.read(adminSessionProvider.notifier);
+    if (enable) {
+      final result = await notifier.enableBiometricUnlock(
+        localizedReason: l10n.passkeyPromptEnable,
+      );
+      if (!mounted) return;
+      if (result.success) {
+        setState(() => _biometricEnabled = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.passkeyEnabledSnack),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      await notifier.disableBiometricUnlock();
+      if (!mounted) return;
+      setState(() => _biometricEnabled = false);
+    }
+    if (mounted) setState(() => _biometricBusy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final session = ref.watch(adminSessionProvider).valueOrNull;
     final isAdmin = session?.isAdmin == true;
@@ -107,6 +159,14 @@ class PhoneProfileScreen extends ConsumerWidget {
               isAdmin ? '/admin/catalog' : '/admin/login',
             ),
           ),
+          if (isAdmin && _biometricSupported)
+            _BiometricToggleTile(
+              enabled: _biometricEnabled,
+              busy: _biometricBusy,
+              title: l10n.biometricUnlockToggle,
+              subtitle: l10n.biometricUnlockSubtitle,
+              onChanged: _toggleBiometric,
+            ),
           if (isAdmin)
             _ProfileTile(
               icon: Icons.logout_rounded,
@@ -148,6 +208,76 @@ class PhoneProfileScreen extends ConsumerWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BiometricToggleTile extends StatelessWidget {
+  const _BiometricToggleTile({
+    required this.enabled,
+    required this.busy,
+    required this.title,
+    required this.subtitle,
+    required this.onChanged,
+  });
+
+  final bool enabled;
+  final bool busy;
+  final String title;
+  final String subtitle;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: MonVlogTheme.communitySurface,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.fingerprint_rounded,
+                color: MonVlogTheme.onBg,
+                size: 22,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.manrope(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: MonVlogTheme.onBg,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        color: MonVlogTheme.muted,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: enabled,
+                onChanged: busy ? null : onChanged,
+                activeThumbColor: Colors.white,
+                activeTrackColor: MonVlogTheme.brandRed,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
