@@ -8,6 +8,7 @@ import '../../auth/admin_auth_providers.dart';
 import '../../data/catalog_providers.dart';
 import '../../data/shelf_categorizer.dart';
 import '../../data/youtube/youtube_search_models.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Admin-only: search YouTube channels/playlists and add to curated catalog.
 class AdminCatalogScreen extends ConsumerStatefulWidget {
@@ -33,6 +34,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
   }
 
   Future<void> _addHit(YoutubeSearchHit hit) async {
+    final l10n = AppLocalizations.of(context);
     final store = ref.read(catalogStoreProvider);
     if (hit.isPlaylist) {
       await store.addPlaylist(
@@ -41,7 +43,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
         channelId: hit.channelId,
         channelName: hit.channelTitle,
       );
-      setState(() => _status = 'Added playlist “${hit.title}” to catalog');
+      setState(() => _status = l10n.addedPlaylist(hit.title));
     } else {
       final channel = await store.addChannel(
         channelId: hit.id,
@@ -50,8 +52,10 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
         descriptionForHeuristic: hit.description,
       );
       setState(
-        () => _status =
-            'Added “${channel.displayName}” → ${ShelfTypes.displayTitle(channel.category)}',
+        () => _status = l10n.addedChannel(
+          channel.displayName,
+          ShelfTypes.localizedTitle(channel.category, l10n),
+        ),
       );
     }
     ref.invalidate(curatedCatalogProvider);
@@ -77,6 +81,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
       );
     }
 
+    final l10n = AppLocalizations.of(context);
     final search = ref.watch(channelSearchProvider);
     final catalog = ref.watch(curatedCatalogProvider);
     final playlists = ref.watch(localPlaylistsProvider);
@@ -86,19 +91,19 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
       appBar: AppBar(
         backgroundColor: MonVlogTheme.communitySurface,
         title: Text(
-          'Catalog admin',
+          l10n.catalogAdmin,
           style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
         ),
         actions: [
           TextButton(
             onPressed: () => context.go('/phone'),
             child: Text(
-              'Browse app',
+              l10n.browseApp,
               style: GoogleFonts.manrope(color: MonVlogTheme.coral),
             ),
           ),
           IconButton(
-            tooltip: 'Sign out',
+            tooltip: l10n.signOut,
             onPressed: _logout,
             icon: const Icon(Icons.logout_rounded),
           ),
@@ -108,7 +113,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Search YouTube channels',
+            l10n.searchYoutubeChannels,
             style: GoogleFonts.manrope(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -117,8 +122,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Add a channel or playlist to the curated allowlist. Viewers see '
-            'updated shelves without edit controls.',
+            l10n.catalogAdminBlurb,
             style: GoogleFonts.manrope(
               color: MonVlogTheme.muted,
               fontSize: 13,
@@ -133,7 +137,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                   controller: _searchCtrl,
                   style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
                   decoration: InputDecoration(
-                    hintText: 'Channel name…',
+                    hintText: l10n.channelNameHint,
                     hintStyle: GoogleFonts.manrope(color: MonVlogTheme.muted),
                     filled: true,
                     fillColor: MonVlogTheme.communitySurface,
@@ -157,7 +161,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                   ),
                 ),
                 child: Text(
-                  'Search',
+                  l10n.search,
                   style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -180,13 +184,13 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
               child: Center(child: CircularProgressIndicator()),
             ),
             error: (e, _) => Text(
-              'Search error: $e',
+              l10n.searchError('$e'),
               style: GoogleFonts.manrope(color: MonVlogTheme.coral),
             ),
             data: (result) {
               if (ref.watch(channelSearchQueryProvider).trim().isEmpty) {
                 return Text(
-                  'Enter a channel name to search.',
+                  l10n.enterChannelToSearch,
                   style: GoogleFonts.manrope(color: MonVlogTheme.muted),
                 );
               }
@@ -199,7 +203,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        'No results.',
+                        l10n.noResults,
                         style: GoogleFonts.manrope(color: MonVlogTheme.muted),
                       ),
                     ),
@@ -214,7 +218,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
           ),
           const SizedBox(height: 28),
           Text(
-            'Curated catalog',
+            l10n.curatedCatalog,
             style: GoogleFonts.manrope(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -229,7 +233,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  '${config.channels.length} channels · source ${config.source}',
+                  l10n.channelsSource(config.channels.length, config.source),
                   style: GoogleFonts.manrope(
                     color: MonVlogTheme.muted,
                     fontSize: 12,
@@ -248,8 +252,8 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                       ),
                     ),
                     subtitle: Text(
-                      '${c.channelId} · ${ShelfTypes.displayTitle(c.category)}'
-                      '${c.verified ? '' : ' · unverified'}',
+                      '${c.channelId} · ${ShelfTypes.localizedTitle(c.category, l10n)}'
+                      '${c.verified ? '' : ' · ${l10n.unverified}'}',
                       style: GoogleFonts.manrope(
                         color: MonVlogTheme.muted,
                         fontSize: 12,
@@ -269,7 +273,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                 children: [
                   const SizedBox(height: 16),
                   Text(
-                    'Local playlists (${list.length})',
+                    l10n.localPlaylists(list.length),
                     style: GoogleFonts.manrope(
                       fontWeight: FontWeight.w700,
                       color: MonVlogTheme.onBg,
@@ -284,7 +288,7 @@ class _AdminCatalogScreenState extends ConsumerState<AdminCatalogScreen> {
                         style: GoogleFonts.manrope(color: MonVlogTheme.onBg),
                       ),
                       subtitle: Text(
-                        '${p.playlistId} · ${ShelfTypes.displayTitle(p.category)}',
+                        '${p.playlistId} · ${ShelfTypes.localizedTitle(p.category, l10n)}',
                         style: GoogleFonts.manrope(
                           color: MonVlogTheme.muted,
                           fontSize: 12,
@@ -326,7 +330,7 @@ class _MockBanner extends StatelessWidget {
           Expanded(
             child: Text(
               message.isEmpty
-                  ? 'Mock search — YouTube API key not configured.'
+                  ? AppLocalizations.of(context).mockSearchBanner
                   : message,
               style: GoogleFonts.manrope(
                 color: MonVlogTheme.onBg,
@@ -349,6 +353,7 @@ class _SearchHitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Card(
       color: MonVlogTheme.communitySurface,
       margin: const EdgeInsets.only(bottom: 8),
@@ -374,8 +379,8 @@ class _SearchHitTile extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          '${hit.isPlaylist ? 'Playlist' : 'Channel'}'
-          '${hit.isMock ? ' · mock' : ''}\n${hit.description}',
+          '${hit.isPlaylist ? l10n.playlist : l10n.channel}'
+          '${hit.isMock ? ' · ${l10n.mockLabel}' : ''}\n${hit.description}',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.manrope(color: MonVlogTheme.muted, fontSize: 12),
@@ -387,7 +392,7 @@ class _SearchHitTile extends StatelessWidget {
             backgroundColor: MonVlogTheme.brandRed,
           ),
           child: Text(
-            'Add',
+            l10n.add,
             style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
           ),
         ),

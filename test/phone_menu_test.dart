@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:monvlog/app/app.dart';
 import 'package:monvlog/app/theme.dart';
 import 'package:monvlog/features/phone/phone_shell.dart';
+
+import 'test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -14,7 +13,7 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    setTestLocaleEnglish();
   });
 
   testWidgets('phone bottom menu stays visible across Community/Watch/Profile',
@@ -24,9 +23,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MonVlogApp()),
-    );
+    await pumpMonVlogApp(tester);
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
@@ -93,13 +90,10 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          themeMode: ThemeMode.dark,
-          theme: MonVlogTheme.phone,
-          darkTheme: MonVlogTheme.dark,
-          home: const PhoneShell(),
-        ),
+      testApp(
+        theme: MonVlogTheme.phone,
+        darkTheme: MonVlogTheme.dark,
+        home: const PhoneShell(),
       ),
     );
     await tester.pump(const Duration(milliseconds: 1000));

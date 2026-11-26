@@ -6,13 +6,17 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../app/theme.dart';
 import '../../auth/admin_auth_providers.dart';
 import '../../auth/admin_config.dart';
+import '../../l10n/app_localizations.dart';
+import '../../locale/language_switch.dart';
 
 /// Guest / account tab — Wix Spaces “My Profile” equivalent for phone.
+/// Guests and admins both get the language switch here.
 class PhoneProfileScreen extends ConsumerWidget {
   const PhoneProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final session = ref.watch(adminSessionProvider).valueOrNull;
     final isAdmin = session?.isAdmin == true;
     final top = MediaQuery.paddingOf(context).top;
@@ -23,7 +27,7 @@ class PhoneProfileScreen extends ConsumerWidget {
         padding: EdgeInsets.fromLTRB(20, top + 20, 20, 32),
         children: [
           Text(
-            'Profile',
+            l10n.profileTitle,
             style: GoogleFonts.manrope(
               fontSize: 28,
               fontWeight: FontWeight.w800,
@@ -32,7 +36,7 @@ class PhoneProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            isAdmin ? 'Catalog admin signed in' : 'Browsing as guest',
+            isAdmin ? l10n.catalogAdminSignedIn : l10n.browsingAsGuest,
             style: GoogleFonts.manrope(
               fontSize: 14,
               color: MonVlogTheme.muted,
@@ -62,7 +66,7 @@ class PhoneProfileScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isAdmin ? AdminConfig.seedEmail : 'Guest',
+                        isAdmin ? AdminConfig.seedEmail : l10n.guest,
                         style: GoogleFonts.manrope(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -71,7 +75,7 @@ class PhoneProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        isAdmin ? 'Admin' : 'Watch-only access',
+                        isAdmin ? l10n.adminRole : l10n.watchOnlyAccess,
                         style: GoogleFonts.manrope(
                           fontSize: 13,
                           color: MonVlogTheme.memberGrey,
@@ -85,7 +89,7 @@ class PhoneProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 28),
           Text(
-            'Account',
+            l10n.sectionAccount,
             style: GoogleFonts.manrope(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -98,7 +102,7 @@ class PhoneProfileScreen extends ConsumerWidget {
             icon: isAdmin
                 ? Icons.video_library_outlined
                 : Icons.login_rounded,
-            label: isAdmin ? 'Open catalog admin' : 'Admin sign-in',
+            label: isAdmin ? l10n.openCatalogAdmin : l10n.adminSignIn,
             onTap: () => context.go(
               isAdmin ? '/admin/catalog' : '/admin/login',
             ),
@@ -106,13 +110,13 @@ class PhoneProfileScreen extends ConsumerWidget {
           if (isAdmin)
             _ProfileTile(
               icon: Icons.logout_rounded,
-              label: 'Sign out to guest',
+              label: l10n.signOutToGuest,
               onTap: () async {
                 await ref.read(adminSessionProvider.notifier).logout();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Signed out — browsing as guest'),
+                    SnackBar(
+                      content: Text(l10n.signedOutGuestSnack),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -121,7 +125,7 @@ class PhoneProfileScreen extends ConsumerWidget {
             ),
           const SizedBox(height: 20),
           Text(
-            'App',
+            l10n.sectionApp,
             style: GoogleFonts.manrope(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -130,15 +134,16 @@ class PhoneProfileScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 10),
+          const LanguageSwitchTile(),
           _ProfileTile(
             icon: Icons.info_outline_rounded,
-            label: 'About MonVlog',
+            label: l10n.aboutMonVlog,
             onTap: () {
               showAboutDialog(
                 context: context,
                 applicationName: 'MonVlog',
                 applicationVersion: '1.0.0',
-                applicationLegalese: 'Монголчуудын нэгдэл',
+                applicationLegalese: l10n.taglineUnion,
               );
             },
           ),

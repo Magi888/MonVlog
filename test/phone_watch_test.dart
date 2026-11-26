@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:monvlog/app/theme.dart';
 import 'package:monvlog/data/catalog_providers.dart';
@@ -10,6 +9,10 @@ import 'package:monvlog/data/catalog_repository.dart';
 import 'package:monvlog/data/mock_catalog.dart';
 import 'package:monvlog/data/models/curated_channel.dart';
 import 'package:monvlog/features/phone/phone_shell.dart';
+import 'package:monvlog/l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+import 'test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -17,7 +20,7 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    setTestLocaleEnglish();
   });
 
   testWidgets('Watch tab shows mock catalog shelves', (tester) async {
@@ -29,6 +32,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...localeOverrides(),
           homeCatalogProvider.overrideWith((ref) async {
             return CatalogSnapshot(
               shelves: MockCatalog.shelves,
@@ -38,6 +42,14 @@ void main() {
           }),
         ],
         child: MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: MonVlogTheme.phone,
           home: const PhoneShell(initialIndex: 1),
         ),

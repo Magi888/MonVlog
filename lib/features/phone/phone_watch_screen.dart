@@ -9,6 +9,7 @@ import '../../data/catalog_providers.dart';
 import '../../data/catalog_repository.dart';
 import '../../data/models/shelf.dart';
 import '../../data/models/video_item.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Phone Netflix-style Watch — dark horizontal content rails.
 class PhoneWatchScreen extends ConsumerWidget {
@@ -16,6 +17,7 @@ class PhoneWatchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final catalog = ref.watch(homeCatalogProvider);
     final top = MediaQuery.paddingOf(context).top;
 
@@ -28,7 +30,7 @@ class PhoneWatchScreen extends ConsumerWidget {
         ),
         error: (err, _) => Center(
           child: Text(
-            'Catalog error: $err',
+            l10n.catalogError('$err'),
             style: const TextStyle(color: MonVlogTheme.onBg),
           ),
         ),
@@ -55,7 +57,8 @@ class _WatchBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final source = snapshot.isMock ? 'Mock catalog' : 'Live YouTube';
+    final l10n = AppLocalizations.of(context);
+    final source = snapshot.isMock ? l10n.mockCatalog : l10n.liveYoutube;
     final featured = snapshot.shelves.isNotEmpty &&
             snapshot.shelves.first.items.isNotEmpty
         ? snapshot.shelves.first.items.first
@@ -96,7 +99,7 @@ class _WatchBody extends StatelessWidget {
                   ),
                 ),
                 if (snapshot.isMock)
-                  TextButton(onPressed: onRetry, child: const Text('Retry')),
+                  TextButton(onPressed: onRetry, child: Text(l10n.retry)),
               ],
             ),
           ),

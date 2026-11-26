@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
 import '../../data/mock_channels.dart';
+import '../../l10n/app_localizations.dart';
 import 'widgets/monvlog_logo_mark.dart';
 
 /// Phone community shell — Wix Spaces Monvlog.com look (dark).
@@ -25,17 +26,17 @@ class _CommunityScreenState extends State<CommunityScreen>
   late final Animation<double> _logoScale;
   late final TabController _tabs;
 
-  static const _tabLabels = [
-    'НҮҮР ХУУДАС',
-    'МОНГОЛ ВЛОГ & КОНТЕНТ',
-    'ОНЛАЙН ШОП',
-    'PREMIUM',
+  List<String> _tabLabels(AppLocalizations l10n) => [
+    l10n.tabHome,
+    l10n.tabVlogContent,
+    l10n.tabOnlineShop,
+    l10n.tabPremium,
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: _tabLabels.length, vsync: this, initialIndex: 1);
+    _tabs = TabController(length: 4, vsync: this, initialIndex: 1);
     _enter = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 920),
@@ -70,9 +71,10 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _stub(String label) {
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$label — mock (stubbed)'),
+        content: Text(l10n.stubSuffix(label)),
         behavior: SnackBarBehavior.floating,
         backgroundColor: MonVlogTheme.communityElevated,
       ),
@@ -81,6 +83,8 @@ class _CommunityScreenState extends State<CommunityScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final tabLabels = _tabLabels(l10n);
     final top = MediaQuery.paddingOf(context).top;
     final heroHeight = MediaQuery.sizeOf(context).height * 0.34;
 
@@ -105,9 +109,9 @@ class _CommunityScreenState extends State<CommunityScreen>
                       opacity: _heroFade,
                       child: _HeroBanner(
                         topInset: top,
-                        onBell: () => _stub('Notifications'),
-                        onCart: () => _stub('Cart'),
-                        onMore: () => _stub('More'),
+                        onBell: () => _stub(l10n.notifications),
+                        onCart: () => _stub(l10n.cart),
+                        onMore: () => _stub(l10n.more),
                       ),
                     ),
                   ),
@@ -119,8 +123,8 @@ class _CommunityScreenState extends State<CommunityScreen>
                       position: _cardSlide,
                       child: _ProfileCard(
                         logoScale: _logoScale,
-                        onInvite: () => _stub('Invite'),
-                        onOperator: () => _stub('Оператор'),
+                        onInvite: () => _stub(l10n.invite),
+                        onOperator: () => _stub(l10n.operator),
                       ),
                     ),
                   ),
@@ -129,7 +133,7 @@ class _CommunityScreenState extends State<CommunityScreen>
             ),
           ),
           SliverToBoxAdapter(
-            child: _CommunityTabs(controller: _tabs, labels: _tabLabels),
+            child: _CommunityTabs(controller: _tabs, labels: tabLabels),
           ),
           SliverToBoxAdapter(
             child: AnimatedBuilder(
@@ -137,7 +141,7 @@ class _CommunityScreenState extends State<CommunityScreen>
               builder: (context, _) {
                 if (_tabs.index == 1) {
                   return _VlogTabContent(
-                    onPost: () => _stub('Бичлэг байршуулая'),
+                    onPost: () => _stub(l10n.uploadVideo),
                     onViewChannel: (name) {
                       context.go('/phone/watch');
                       _stub('View Channel: $name');
@@ -145,11 +149,11 @@ class _CommunityScreenState extends State<CommunityScreen>
                   );
                 }
                 if (_tabs.index == 0) {
-                  return _HomeTabContent(onPromo: () => _stub('AU-PAIR promo'));
+                  return _HomeTabContent(onPromo: () => _stub(l10n.auPairGermany));
                 }
                 return _StubTabBody(
-                  title: _tabLabels[_tabs.index],
-                  message: 'Mock tab — content lands later.',
+                  title: tabLabels[_tabs.index],
+                  message: l10n.mockTabLater,
                 );
               },
             ),
@@ -292,7 +296,7 @@ class _ProfileCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Monvlog.com',
+                  AppLocalizations.of(context).brandSite,
                   style: GoogleFonts.manrope(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
@@ -303,7 +307,7 @@ class _ProfileCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Монголчуудын нэгдэл 🥰',
+                  '${AppLocalizations.of(context).taglineUnion} 🥰',
                   style: GoogleFonts.manrope(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -317,14 +321,14 @@ class _ProfileCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: onInvite,
                         icon: const Icon(Icons.ios_share_rounded, size: 18),
-                        label: const Text('Invite'),
+                        label: Text(AppLocalizations.of(context).invite),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
                         onPressed: onOperator,
-                        child: const Text('Оператор'),
+                        child: Text(AppLocalizations.of(context).operator),
                       ),
                     ),
                   ],
@@ -381,13 +385,14 @@ class _HomeTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Зар Сурталчилгаа',
+            l10n.adsSection,
             style: GoogleFonts.manrope(
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -427,7 +432,7 @@ class _HomeTabContent extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'AU-PAIR · Germany',
+                            l10n.auPairGermany,
                             style: GoogleFonts.manrope(
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -435,7 +440,7 @@ class _HomeTabContent extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Mock community promo banner',
+                            l10n.mockPromoBanner,
                             style: GoogleFonts.manrope(
                               color: MonVlogTheme.memberGrey,
                               fontSize: 13,
@@ -466,13 +471,14 @@ class _VlogTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Сануулга',
+            l10n.reminder,
             style: GoogleFonts.manrope(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -484,7 +490,7 @@ class _VlogTabContent extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'New Content Coming Soon!',
+                  l10n.newContentComingSoon,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                     fontSize: 20,
@@ -494,7 +500,7 @@ class _VlogTabContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Once Monvlog.com adds new content, you’ll be able to view it here.',
+                  l10n.newContentBody,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.manrope(
                     fontSize: 14,
@@ -507,7 +513,7 @@ class _VlogTabContent extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: onPost,
-                    child: const Text('Бичлэг байршуулая'),
+                    child: Text(l10n.uploadVideo),
                   ),
                 ),
               ],
@@ -518,7 +524,7 @@ class _VlogTabContent extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'All Video Channels',
+                  l10n.allVideoChannels,
                   style: GoogleFonts.manrope(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -527,9 +533,9 @@ class _VlogTabContent extends StatelessWidget {
                 ),
               ),
               TextButton.icon(
-                onPressed: () => onViewChannel('Manage'),
+                onPressed: () => onViewChannel(l10n.manage),
                 icon: const Icon(Icons.menu_rounded, size: 18),
-                label: const Text('Manage'),
+                label: Text(l10n.manage),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white70,
                   backgroundColor: MonVlogTheme.communityElevated,
@@ -567,6 +573,9 @@ class _ChannelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final tier = channel.tierKey == 'free' ? l10n.freeTier : channel.tierKey;
+    final action = channel.actionKey == 'manage' ? l10n.manage : l10n.viewChannel;
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: Column(
@@ -612,7 +621,7 @@ class _ChannelCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${channel.videoCount} Videos',
+                        l10n.videosCount(channel.videoCount),
                         style: GoogleFonts.manrope(
                           color: Colors.white70,
                           fontSize: 13,
@@ -630,7 +639,7 @@ class _ChannelCard extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  channel.tier,
+                  tier,
                   style: GoogleFonts.manrope(
                     color: Colors.white70,
                     fontWeight: FontWeight.w600,
@@ -647,7 +656,7 @@ class _ChannelCard extends StatelessWidget {
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: Text(channel.actionLabel),
+                  child: Text(action),
                 ),
               ],
             ),

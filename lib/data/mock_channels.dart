@@ -5,16 +5,20 @@ class MockVideoChannel {
     required this.name,
     required this.videoCount,
     required this.bannerSeed,
-    this.tier = 'Free',
-    this.actionLabel = 'View Channel',
+    this.tierKey = 'free',
+    this.actionKey = 'view',
   });
 
   final String id;
   final String name;
   final int videoCount;
   final String bannerSeed;
-  final String tier;
-  final String actionLabel;
+
+  /// `free` → [AppLocalizations.freeTier]
+  final String tierKey;
+
+  /// `view` | `manage` → viewChannel / manage
+  final String actionKey;
 
   String get bannerUrl =>
       'https://picsum.photos/seed/$bannerSeed/640/280';
@@ -40,7 +44,7 @@ class MockChannels {
       name: 'Үз+Дэг ОниГоо',
       videoCount: 10,
       bannerSeed: 'monvlog-ch-uzdeg',
-      actionLabel: 'Manage',
+      actionKey: 'manage',
     ),
     MockVideoChannel(
       id: 'gremix',

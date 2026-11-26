@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:monvlog/app/app.dart';
+import 'test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -12,7 +10,7 @@ void main() {
   });
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    setTestLocaleEnglish();
   });
 
   testWidgets('MonVlog splash shows brand then entry login', (tester) async {
@@ -21,9 +19,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MonVlogApp()),
-    );
+    await pumpMonVlogApp(tester);
     expect(find.text('Watch anywhere, make anywhere'), findsOneWidget);
     expect(
       find.byWidgetPredicate(
@@ -54,9 +50,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MonVlogApp()),
-    );
+    await pumpMonVlogApp(tester);
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
@@ -75,5 +69,6 @@ void main() {
     expect(find.text('Browsing as guest'), findsOneWidget);
     expect(find.text('Continue as guest'), findsNothing);
     expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
   });
 }

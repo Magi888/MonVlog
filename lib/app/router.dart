@@ -11,6 +11,7 @@ import '../features/detail/video_detail_screen.dart';
 import '../features/phone/phone_shell.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/tv/tv_shell.dart';
+import '../l10n/app_localizations.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final gate = _AdminGateListenable(ref);
@@ -102,11 +103,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'detail',
         builder: (context, state) {
           final extra = state.extra;
+          final l10n = AppLocalizations.of(context);
           final item = extra is VideoItem
               ? extra
-              : const VideoItem(
+              : VideoItem(
                   id: '',
-                  title: 'Missing video',
+                  title: l10n.missingVideo,
                   channelName: '',
                   thumbnailUrl: '',
                 );
@@ -114,9 +116,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Route error: ${state.error}')),
-    ),
+    errorBuilder: (context, state) {
+      // Localizations may be unavailable during early bootstrap.
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        body: Center(child: Text(l10n.routeError('${state.error}'))),
+      );
+    },
   );
 });
 

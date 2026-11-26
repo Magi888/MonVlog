@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:monvlog/app/app.dart';
 import 'package:monvlog/app/router.dart';
 import 'package:monvlog/features/phone/phone_shell.dart';
+
+import 'test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -14,7 +15,7 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    setTestLocaleEnglish();
   });
 
   testWidgets('/home on phone viewport redirects into PhoneShell with Profile',
@@ -24,9 +25,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MonVlogApp()),
-    );
+    await pumpMonVlogApp(tester);
     // Advance past splash timer onto the entry login, then hit the legacy alias.
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pump(const Duration(milliseconds: 100));
@@ -73,9 +72,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MonVlogApp()),
-    );
+    await pumpMonVlogApp(tester);
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pump(const Duration(milliseconds: 100));
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:monvlog/auth/admin_config.dart';
 import 'package:monvlog/features/admin/admin_login_screen.dart';
+
+import 'test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -14,7 +14,7 @@ void main() {
   });
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    setTestLocaleEnglish();
   });
 
   GoRouter buildRouter() {
@@ -52,11 +52,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp.router(routerConfig: buildRouter()),
-      ),
-    );
+    await tester.pumpWidget(testAppRouter(routerConfig: buildRouter()));
     await tester.pumpAndSettle();
 
     expect(find.text('MonVlog'), findsOneWidget);
@@ -64,6 +60,7 @@ void main() {
     expect(find.text('Continue as guest'), findsOneWidget);
     expect(find.text(AdminConfig.seedEmail), findsOneWidget);
     expect(find.textContaining('seeded admin'), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
 
     // Password field starts empty — never prefilled from source.
     final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();
@@ -78,11 +75,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp.router(routerConfig: buildRouter()),
-      ),
-    );
+    await tester.pumpWidget(testAppRouter(routerConfig: buildRouter()));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue as guest'));
     await tester.pumpAndSettle();
@@ -95,11 +88,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp.router(routerConfig: buildRouter()),
-      ),
-    );
+    await tester.pumpWidget(testAppRouter(routerConfig: buildRouter()));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue as guest'));
     await tester.pumpAndSettle();

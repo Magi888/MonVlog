@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/theme.dart';
 import '../../billing/purchases_stub.dart';
+import '../../l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -78,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   const SizedBox(height: 22),
                   Text(
-                    'Watch anywhere, make anywhere',
+                    AppLocalizations.of(context).splashTagline,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.manrope(
                       fontSize: taglineSize,

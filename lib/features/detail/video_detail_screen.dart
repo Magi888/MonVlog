@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/form_factor.dart';
 import '../../app/theme.dart';
 import '../../data/models/video_item.dart';
+import '../../l10n/app_localizations.dart';
 import '../../platform/youtube_intent.dart';
 
 String _browseHome(BuildContext context) =>
@@ -39,11 +40,10 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
   }
 
   void _onPlay() {
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Play “${widget.item.title}” — in-app player arrives in M3',
-        ),
+        content: Text(l10n.playSnack(widget.item.title)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -55,6 +55,7 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final item = widget.item;
     final published = item.publishedAt;
     final metaBits = <String>[
@@ -150,7 +151,7 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
                           child: Text(
                             item.description.isNotEmpty
                                 ? item.description
-                                : 'No description available for this video.',
+                                : l10n.noDescription,
                             style: const TextStyle(
                               fontSize: 17,
                               height: 1.45,
@@ -167,16 +168,16 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
                           _TvButton(
                             focusNode: _playFocus,
                             autofocus: true,
-                            label: 'Play',
+                            label: l10n.play,
                             primary: true,
                             onPressed: _onPlay,
                           ),
                           _TvButton(
-                            label: 'Open in YouTube',
+                            label: l10n.openInYoutube,
                             onPressed: _openExternal,
                           ),
                           _TvButton(
-                            label: 'Back',
+                            label: l10n.back,
                             onPressed: () {
                               if (context.canPop()) {
                                 context.pop();
