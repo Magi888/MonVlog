@@ -37,11 +37,13 @@ flutter build appbundle --release
 
 Release currently signs with the **debug** keystore in `android/app/build.gradle.kts` so local installs work. For Play / Galaxy Store production, add a real upload keystore before shipping.
 
-Optional dart-defines (same as README):
+Optional dart-defines (same as README). Admin password has a private-app
+default — you do **not** need `--dart-define=ADMIN_PASSWORD` for a normal
+release install. Override only if you want a different password:
 
 ```sh
 flutter build apk --release \
-  --dart-define=ADMIN_PASSWORD=YOUR_SECRET \
+  --dart-define=ADMIN_PASSWORD=YOUR_OVERRIDE \
   --dart-define=YOUTUBE_API_KEY=YOUR_KEY
 ```
 

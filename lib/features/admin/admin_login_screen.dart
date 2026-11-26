@@ -11,7 +11,7 @@ import '../phone/widgets/monvlog_logo_mark.dart';
 
 /// Branded MonVlog entry / admin login.
 ///
-/// Admin (`maag888@gmail.com` + `ADMIN_PASSWORD` dart-define) → catalog.
+/// Admin (`maag888@gmail.com` + compile-time `ADMIN_PASSWORD`) → catalog.
 /// Everyone else can **Continue as guest** into the phone shell (read-only).
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
@@ -335,9 +335,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                               const SizedBox(height: 20),
                               Text(
                                 'Guests browse Community & Watch read-only. '
-                                'Only the seeded admin can curate the catalog. '
-                                'Password via --dart-define=ADMIN_PASSWORD '
-                                '(never commit).',
+                                'Only the seeded admin can curate the catalog.',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.manrope(
                                   color: MonVlogTheme.muted,

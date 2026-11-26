@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'admin_config.dart';
 
-/// Admin login + role gate. Password never lives in source — only dart-define
-/// and/or flutter_secure_storage (hashed).
+/// Admin login + role gate. Compile-time password (default or dart-define
+/// override) is hashed into flutter_secure_storage for verification.
 class AdminAuthService {
   AdminAuthService({
     FlutterSecureStorage? secureStorage,
@@ -33,17 +33,19 @@ class AdminAuthService {
     return sha256.convert(bytes).toString();
   }
 
-  /// On first run, if `--dart-define=ADMIN_PASSWORD` is set and secure storage
-  /// has no hash yet, persist the hash for subsequent launches.
+  /// Persist (or refresh) the hash of the compile-time admin password so
+  /// builds that change the default / dart-define take effect without a
+  /// manual storage wipe.
   Future<void> bootstrapFromDartDefine() async {
     final define = AdminConfig.passwordFromDefine.trim();
     if (define.isEmpty) return;
 
     try {
+      final expected = hashPassword(define);
       final existing = await _secure.read(key: _passwordHashKey);
-      if (existing != null && existing.isNotEmpty) return;
+      if (existing == expected) return;
 
-      await _secure.write(key: _passwordHashKey, value: hashPassword(define));
+      await _secure.write(key: _passwordHashKey, value: expected);
     } catch (_) {
       // Platform channel missing (tests) or storage unavailable — define still
       // works for in-memory login comparison via [_passwordMatches].
