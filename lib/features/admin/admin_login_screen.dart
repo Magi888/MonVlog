@@ -16,7 +16,7 @@ import '../phone/widgets/monvlog_logo_mark.dart';
 ///
 /// Admin (`maag888@gmail.com` + password) → catalog.
 /// After one password login, optional local passkey / biometric unlock.
-/// Everyone else can **Continue as guest** into the phone shell (read-only).
+/// Everyone else can **Continue as guest** into phone (`/phone`) or TV (`/tv`).
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
 
@@ -260,6 +260,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
 
     final canPop = context.canPop();
     final showBiometricPrimary = _biometricReady && _preferBiometric;
+    final isTv = FormFactor.isTvLayout(context);
 
     return Scaffold(
       body: DecoratedBox(
@@ -364,6 +365,32 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                 ),
                               ),
                               const SizedBox(height: 32),
+                              // Living-room remote: guest first + autofocus.
+                              if (isTv) ...[
+                                FilledButton(
+                                  autofocus: true,
+                                  onPressed: _busy ? null : _continueAsGuest,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: MonVlogTheme.brandRed,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    l10n.continueAsGuest,
+                                    style: GoogleFonts.manrope(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 17,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                              ],
                               if (showBiometricPrimary) ...[
                                 FilledButton.icon(
                                   onPressed: _busy ? null : _submitBiometric,
@@ -562,30 +589,33 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen>
                                   ),
                                 ],
                               ],
-                              const SizedBox(height: 12),
-                              OutlinedButton(
-                                onPressed: _busy ? null : _continueAsGuest,
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: MonVlogTheme.onBg,
-                                  side: BorderSide(
-                                    color: Colors.white.withValues(alpha: 0.28),
-                                    width: 1.4,
+                              if (!isTv) ...[
+                                const SizedBox(height: 12),
+                                OutlinedButton(
+                                  onPressed: _busy ? null : _continueAsGuest,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: MonVlogTheme.onBg,
+                                    side: BorderSide(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.28),
+                                      width: 1.4,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 15,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
                                   ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 15,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                  child: Text(
+                                    l10n.continueAsGuest,
+                                    style: GoogleFonts.manrope(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 15,
+                                    ),
                                   ),
                                 ),
-                                child: Text(
-                                  l10n.continueAsGuest,
-                                  style: GoogleFonts.manrope(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
+                              ],
                               const SizedBox(height: 20),
                               const LanguageSwitchTile(compact: true),
                               const SizedBox(height: 16),

@@ -102,7 +102,8 @@ adb devices
 adb install -r build/app/outputs/flutter-apk/app-release.apk
 ```
 
-5. On the TV Apps / Games row you should see **MonVlog** with the leanback **banner**. Open it — splash routes to the Netflix-style `/tv` shell on a wide display.
+5. On the TV Apps / Games row you should see **MonVlog** with the leanback **banner**. Open it — splash detects Android TV / wide landscape and routes to the Netflix-style `/tv` shell (left rail: Home · Creators · Settings).
+6. Use the **D-pad**: focus shelves or Creators → **Select** → video detail → **Play** for the in-app YouTube player. Back returns through the stack.
 
 **USB stick sideload:** some Google TV builds allow installing an APK from a USB drive via a file manager. Prefer ADB when possible (clearer permissions).
 
@@ -125,6 +126,7 @@ Samsung **Galaxy Store** is phone-centric. Living-room Google TV Samsung devices
 | `android.hardware.touchscreen` `required="false"` | Yes |
 | `android.software.leanback` `required="false"` | Yes (false = phone **and** TV) |
 | `android:banner` `@drawable/tv_banner` | Yes — 320×180 xhdpi PNG |
+| `UiModeManager` television channel | Yes — forces `/tv` shell on leanback |
 | Internet permission | Yes |
 
 If `leanback` were `required="true"`, Play would hide the app from phones — keep it **false** for the dual Samsung phone + TV APK.
